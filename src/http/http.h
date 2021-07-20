@@ -15,5 +15,6 @@ char* http_getValueFromIndex(char** lines,int index);
 int http_findDataOffset(char* data);
 HTTPResponseInfo* http_parseResponse(char* response);
 void http_sendGETRequest(char* path,Socket* sock);
+void http_sendPOSTRequest(char* path,char* datatype,char* data,Socket* sock);
 
 #endif

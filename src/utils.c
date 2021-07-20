@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-char** split(char* str,char ch){
+char** split(char* str,char ch,int* len){
     char** output=(char**)malloc(0);
     char* tempString=(char*)malloc(0);
     int elements=0,index=0;
@@ -37,6 +37,15 @@ char** split(char* str,char ch){
        tempString[index+1]=0;
        strcpy(output[elements],tempString);
        free(tempString);
+       elements++;
     }
+    if(len)
+        *len=elements;
     return output;
+}
+void array_free(void** data,int len){
+    for(int i=0; i<len; i++){
+       free(data[i]);
+    }
+    free(data);
 }

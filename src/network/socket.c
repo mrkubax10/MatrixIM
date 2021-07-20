@@ -3,6 +3,7 @@
 #if defined(__unix__)
 #include <string.h>
 #include <unistd.h>
+#include <netinet/tcp.h>
 bool Socket_connect(Socket* sock,char* address,int port){
     if(sock->connected){
         printf("(Warn) [Socket] Socket already connected\n");
@@ -22,7 +23,9 @@ bool Socket_connect(Socket* sock,char* address,int port){
     bzero((char*)&sock->address,sizeof(sock->address));
     sock->address.sin_family=AF_INET;
     bcopy((char*)sock->serverInfo->h_addr,(char*)&sock->address.sin_addr.s_addr,sock->serverInfo->h_length);
+    int retries=1;
     sock->address.sin_port=htons(port);
+    setsockopt(sock->sockfd,IPPROTO_TCP,TCP_SYNCNT,&retries,sizeof(retries));
     if(connect(sock->sockfd,(struct sockaddr*)&sock->address,sizeof(sock->address))<0){
         printf("(Warn) [Socket] Failed to connect to host %s\n",address);
         return false;
