@@ -1,0 +1,36 @@
+
+CC        := gcc
+LD        := gcc
+
+MODULES   := . screens network http
+SRC_DIR   := $(addprefix src/,$(MODULES))
+BUILD_DIR := $(addprefix build/,$(MODULES))
+
+SRC       := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.c))
+OBJ       := $(patsubst src/%.c,build/%.o,$(SRC))
+INCLUDES  := $(addprefix -I,$(SRC_DIR))
+
+vpath %.c $(SRC_DIR)
+
+define make-goal
+$1/%.o: %.c
+	$(CC) $(INCLUDES) -g -c $$< -o $$@ `pkg-config --cflags gtk+-3.0`
+endef
+
+.PHONY: all checkdirs clean
+
+all: checkdirs build/MatrixIM
+
+build/MatrixIM: $(OBJ)
+	$(LD) -g $^ -o $@ `pkg-config --libs gtk+-3.0`
+
+
+checkdirs: $(BUILD_DIR)
+
+$(BUILD_DIR):
+	@mkdir "$@"
+
+clean:
+	@rm -rf $(BUILD_DIR)
+
+$(foreach bdir,$(BUILD_DIR),$(eval $(call make-goal,$(bdir))))
