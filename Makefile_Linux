@@ -2,7 +2,7 @@
 CC        := gcc
 LD        := gcc
 
-MODULES   := . screens network http
+MODULES   := . screens network http matrix
 SRC_DIR   := $(addprefix src/,$(MODULES))
 BUILD_DIR := $(addprefix build/,$(MODULES))
 
@@ -22,7 +22,7 @@ endef
 all: checkdirs build/MatrixIM
 
 build/MatrixIM: $(OBJ)
-	$(LD) -g $^ -o $@ `pkg-config --libs gtk+-3.0`
+	$(LD) -g $^ -o $@ `pkg-config -lcjson --libs gtk+-3.0`
 
 
 checkdirs: $(BUILD_DIR)

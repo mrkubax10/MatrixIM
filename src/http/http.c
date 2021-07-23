@@ -8,6 +8,12 @@ HTTPResponseInfo* HTTPResponseInfo_new(){
     HTTPResponseInfo* output=(HTTPResponseInfo*)malloc(sizeof(HTTPResponseInfo));
     return output;
 }
+void HTTPResponseInfo_destroy(HTTPResponseInfo* info){
+    free(info->version);
+    free(info->datatype);
+    free(info->data);
+    free(info);
+}
 int http_findEntry(char** lines,char* entry){
     int index=0;
     int dataLength=0;
@@ -75,16 +81,18 @@ HTTPResponseInfo* http_parseResponse(char* response){
     char** lines=split(response,'\n',&linesCount);
     char** header=split(lines[0],' ',&headerDataCount);
     if(strcmp(header[0],HTTP_VERSION)!=0)
-        printf("(Warn) [HTTP] Received response with different version (%s)\n",header[0]);
+        printf("(Warn) [HTTP] Received response with different HTTP version than 1.1\n");
     output->version=(char*)malloc(strlen(header[0])+1);
-    strcpy(output->version,header[0]);
+    memcpy(output->version,header[0],strlen(header[0]));
+    output->version[strlen(header[0])]=0;
     output->code=atoi(header[1]);
     array_free((void**)header,headerDataCount);
     int contentTypeIndex=http_findEntry(lines,"Content-Type");
     if(contentTypeIndex!=-1){
         char* value=http_getValueFromIndex(lines,contentTypeIndex);
         output->datatype=(char*)malloc(strlen(value));
-        strcpy(output->datatype,value);
+        memcpy(output->datatype,value,strlen(value));
+        output->datatype[strlen(value)-1]=0;
         free(value);
     }
     else{
@@ -104,21 +112,17 @@ HTTPResponseInfo* http_parseResponse(char* response){
     array_free((void**)lines,linesCount);
     return output;
 }
-void http_sendGETRequest(char* path,Socket* sock){
-    int resultLength=strlen("GET ")+strlen(path)+strlen(HTTP_VERSION)+6;
-    char* request=(char*)malloc(resultLength);
-    snprintf(request,resultLength,"GET %s %s\r\n\r\n",path,HTTP_VERSION);
-    request[resultLength]=0;
-    Socket_send(sock,request,resultLength);
+void http_sendGETRequest(char* path,char* host,Socket* sock){
+    int length=snprintf(0,0,"GET %s %s\r\nHost: %s\r\n\r\n",path,HTTP_VERSION,host);
+    char* request=(char*)malloc(length+1);
+    snprintf(request,length+1,"GET %s %s\r\nHost: %s\r\n\r\n",path,HTTP_VERSION,host);
+    Socket_send(sock,request,length);
     free(request);
 }
-void http_sendPOSTRequest(char* path,char* datatype,char* data,Socket* sock){
-    int resultLength=strlen("POST ")+strlen(path)+strlen(HTTP_VERSION)+2;
-    resultLength+=strlen("Content-Type: ")+strlen(datatype)+3;
-    resultLength+=strlen(data)+1;
-    char* request=(char*)malloc(resultLength);
-    snprintf(request,resultLength,"POST %s %s\nContent-Type: %s\n\r\n%s",path,HTTP_VERSION,datatype,data);
-    request[resultLength]=0;
-    Socket_send(sock,request,resultLength);
+void http_sendPOSTRequest(char* path,char* host,char* datatype,int datalength,char* data,Socket* sock){
+    int length=snprintf(0,0,"POST %s %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nHost: %s\r\n\r\n%s",path,HTTP_VERSION,datatype,datalength,host,data);
+    char* request=(char*)malloc(length+1);
+    snprintf(request,length+1,"POST %s %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nHost: %s\r\n\r\n%s",path,HTTP_VERSION,datatype,datalength,host,data);
+    Socket_send(sock,request,length);
     free(request);
 }
