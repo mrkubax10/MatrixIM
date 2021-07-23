@@ -22,7 +22,7 @@ endef
 all: checkdirs build/MatrixIM
 
 build/MatrixIM: $(OBJ)
-	$(LD) -g $^ -o $@ `pkg-config -lcjson --libs gtk+-3.0`
+	$(LD) -g $^ -o $@ -lcjson `pkg-config --libs gtk+-3.0`
 
 
 checkdirs: $(BUILD_DIR)
