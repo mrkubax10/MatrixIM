@@ -5,6 +5,7 @@
 #include <cjson/cJSON.h>
 #include "matrix/login.h"
 #include "utils.h"
+#include <stdlib.h>
 LoginScreen* loginScreen;
 LoginScreen* LoginScreen_new(){
     LoginScreen* output=(LoginScreen*)malloc(sizeof(LoginScreen));
@@ -100,6 +101,20 @@ void loginscreen_init(){
     loginScreen->loginRegisterContainer=gtk_flow_box_new();
     loginScreen->buttonLogin=gtk_button_new_with_label("Login");
     loginScreen->buttonRegister=gtk_button_new_with_label("Register");
+
+    if(app->settings->wasLoggedIn && app->settings->lastUsername && app->settings->lastPassword && app->settings->lastHomeserver){
+        loginscreen_login(app->settings->lastHomeserver,app->settings->lastPort,app->settings->lastUsername,app->settings->lastPassword);
+    }
+    else{
+        if(app->settings->lastHomeserver)
+            gtk_entry_set_text(GTK_ENTRY(loginScreen->entryHomeserver),app->settings->lastHomeserver);
+        if(app->settings->lastPort!=8008)
+            gtk_entry_set_text(GTK_ENTRY(loginScreen->entryPort),intToString(app->settings->lastPort));
+        if(app->settings->lastPassword)
+            gtk_entry_set_text(GTK_ENTRY(loginScreen->labelPassword),app->settings->lastPassword);
+        if(app->settings->lastUsername)
+            gtk_entry_set_text(GTK_ENTRY(loginScreen->labelUsername),app->settings->lastUsername);
+    }
 
     gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(loginScreen->homeserverContainer),4);
     gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(loginScreen->entryUsernameContainer),2);
@@ -268,5 +283,20 @@ LoginResult loginscreen_login(char* ip,int port,char* username,char* password){
     cJSON_free((void*)jsonDeviceID);
     cJSON_free((void*)jsonData);
     app->loggedIn=true;
+    app->settings->wasLoggedIn=true;
+    app->settings->deviceID=app->loginInfo->deviceID;
+    app->settings->lastPort=port;
+    if(app->settings->lastUsername)
+        free(app->settings->lastUsername);
+    if(app->settings->lastPassword)
+        free(app->settings->lastPassword);
+    if(app->settings->lastHomeserver)
+        free(app->settings->lastHomeserver);
+    app->settings->lastUsername=(char*)malloc(strlen(username)+1);
+    strcpy(app->settings->lastUsername,username);
+    app->settings->lastPassword=(char*)malloc(strlen(password)+1);
+    strcpy(app->settings->lastPassword,password);
+    app->settings->lastHomeserver=(char*)malloc(strlen(ip)+1);
+    strcpy(app->settings->lastHomeserver,ip);
     return LOGINRESULT_SUCCESS;
 }

@@ -49,3 +49,36 @@ void array_free(void** data,int len){
     }
     free(data);
 }
+
+#if defined(__linux__)
+char* getConfigDir(){
+    char* home=getenv("HOME");
+    if(strcmp(home,"")==0){
+        printf("(Warn) [Get Config Dir] Failed to detect config directory, application directory will be used instead\n");
+        return "";
+    }
+    char* output=strcat(home,"/.config/matrixim");
+    return output;
+}
+#elif defined(_WIN32)
+char* getConfigDir(){
+    char* appdata=getenv("appdata");
+    if(strcmp(appdata,"")==0){
+        printf("(Warn) [Get Config Dir] Failed to detect config directory, application directory will be used instead\n");
+        return "";
+    }
+    char* output=strcat(appdata,"/matrixim");
+    return output;
+}
+#else
+char* getConfigDir(){
+    printf("(Warn) [Get Config Dir] Unsupported operating system, application directory will be used instead\n");
+    return "";
+}
+#endif
+char* intToString(int num){
+    int length=snprintf(0,0,"%d",num);
+    char* output=(char*)malloc(length+1);
+    snprintf(output,length+1,"%d",num);
+    return output;
+}
