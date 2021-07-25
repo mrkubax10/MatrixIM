@@ -290,10 +290,6 @@ LoginResult loginscreen_login(char* ip,int port,char* username,char* password){
     app->settings->wasLoggedIn=true;
     app->settings->deviceID=app->loginInfo->deviceID;
     app->settings->lastPort=port;
-    if(app->settings->lastUsername)
-        free(app->settings->lastUsername);
-    if(app->settings->lastPassword)
-  
     app->settings->lastUsername=(char*)malloc(strlen(username)+1);
     strcpy(app->settings->lastUsername,username);
     app->settings->lastPassword=(char*)malloc(strlen(password)+1);
