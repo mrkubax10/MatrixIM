@@ -206,7 +206,11 @@ LoginResult loginscreen_login(char* ip,int port,char* username,char* password){
     }
     
     HTTPResponseInfo_destroy(response);
-    char* loginRequest=matrix_createPasswordLoginRequest(username,password,"MatrixIM");
+    char* loginRequest;
+    if(app->settings->deviceID!=0)
+        loginRequest=matrix_createPasswordLoginRequest(username,password,0,app->settings->deviceID);
+    else
+        loginRequest=matrix_createPasswordLoginRequest(username,password,"MatrixIM",0);
     http_sendPOSTRequest("/_matrix/client/r0/login",ip,"application/json",strlen(loginRequest),loginRequest,app->homeserverSocket);
     free(loginRequest);
     Socket_read(app->homeserverSocket,responseData,4096);
@@ -289,9 +293,7 @@ LoginResult loginscreen_login(char* ip,int port,char* username,char* password){
     if(app->settings->lastUsername)
         free(app->settings->lastUsername);
     if(app->settings->lastPassword)
-        free(app->settings->lastPassword);
-    if(app->settings->lastHomeserver)
-        free(app->settings->lastHomeserver);
+  
     app->settings->lastUsername=(char*)malloc(strlen(username)+1);
     strcpy(app->settings->lastUsername,username);
     app->settings->lastPassword=(char*)malloc(strlen(password)+1);

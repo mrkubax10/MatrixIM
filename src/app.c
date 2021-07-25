@@ -57,6 +57,7 @@ void ApplicationSettings_load(ApplicationSettings* settings){
     }
     if(wasLoggedIn && cJSON_IsBool(wasLoggedIn)){
         settings->wasLoggedIn=wasLoggedIn->valueint==1?true:false;
+        cJSON_free(wasLoggedIn);
     }
     if(deviceID && cJSON_IsString(deviceID)){
         settings->deviceID=(char*)malloc(strlen(deviceID->valuestring)+1);
