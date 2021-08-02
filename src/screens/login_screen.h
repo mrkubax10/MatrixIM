@@ -3,7 +3,6 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 typedef struct LoginScreen{
-    GtkWidget* fixedContainer;
     GtkWidget* homeserverContainer;
     GtkWidget* labelHomeserver;
     GtkWidget* entryHomeserver;
@@ -31,5 +30,7 @@ void loginscreen_buttonLogin_clicked(GtkWidget* widget,gpointer userData);
 void loginscreen_selectHomeserver_clicked(GtkWidget* widget,gpointer userData);
 void loginscreen_showPassword_toggle(GtkWidget* widget,gpointer userData);
 void loginscreen_init();
+void loginscreen_finish();
+void loginscreen_checkLoginResult(LoginResult loginResult);
 LoginResult loginscreen_login(char* ip,int port,char* username,char* password);
 #endif

@@ -17,6 +17,7 @@ void ApplicationSettings_save(ApplicationSettings* settings);
 
 typedef struct Application{
     GtkWidget* window;
+    GtkWidget* fixedContainer;
     Socket* homeserverSocket;
     bool loggedIn;
     LoginInfo* loginInfo;

@@ -1,6 +1,7 @@
 #include "app.h"
 #include "screens/login_screen.h"
 #include <cjson/cJSON.h>
+#include "utils.h"
 Application* app;
 ApplicationSettings* ApplicationSettings_new(){
     ApplicationSettings* output=(ApplicationSettings*)malloc(sizeof(ApplicationSettings));
@@ -109,8 +110,9 @@ void ApplicationSettings_save(ApplicationSettings* settings){
 void application_activate(GtkApplication* gtkApplication,gpointer userdata){
     app->window=gtk_application_window_new(gtkApplication);
     app->homeserverSocket=Socket_new();
+    app->fixedContainer=gtk_fixed_new();
     gtk_window_set_title(GTK_WINDOW(app->window),"MatrixIM");
     gtk_window_set_default_size(GTK_WINDOW(app->window),400,350);
+    gtk_container_add(GTK_CONTAINER(app->window),app->fixedContainer);
     loginscreen_init();
-    gtk_widget_show_all(app->window);
 }
