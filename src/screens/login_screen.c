@@ -4,6 +4,7 @@
 #include "http/http.h"
 #include <cjson/cJSON.h>
 #include "matrix/login.h"
+#include "matrix/register.h"
 #include "utils.h"
 #include <stdlib.h>
 #include "screens/main_screen.h"
@@ -45,6 +46,42 @@ void loginscreen_buttonLogin_clicked(GtkWidget* widget,gpointer userData){
     LoginResult loginResult=loginscreen_login(ip,atoi(port),username,password);
     loginscreen_checkLoginResult(loginResult);
     if(loginResult==LOGINRESULT_SUCCESS){
+        loginscreen_finish();
+        mainscreen_init();
+    }
+}
+void loginscreen_buttonRegister_clicked(GtkWidget* widget,gpointer userData){
+    char* username=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryUsername));
+    char* password=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryPassword));
+    if(strcmp(username,"")==0){
+        GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Username cannot be empty");
+        gtk_dialog_run(GTK_DIALOG(message));
+        gtk_widget_destroy(message);
+        return;
+    }
+    if(strcmp(password,"")==0){
+        GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Password cannot be empty");
+        gtk_dialog_run(GTK_DIALOG(message));
+        gtk_widget_destroy(message);
+        return;
+    }
+    char* ip=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryHomeserver));
+    char* port=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryPort));
+    if(strcmp(ip,"")==0){
+        GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Homeserver IP cannot be empty");
+        gtk_dialog_run(GTK_DIALOG(message));
+        gtk_widget_destroy(message);
+        return;
+    }
+    if(strcmp(port,"")==0){
+        GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_INFO,GTK_BUTTONS_OK,"Homeserver port cannot be empty");
+        gtk_dialog_run(GTK_DIALOG(message));
+        gtk_widget_destroy(message);
+        return;
+    }
+    RegisterResult registerResult=loginscreen_register(ip,atoi(port),username,password);
+    loginscreen_checkRegisterResult(registerResult);
+    if(registerResult==REGISTERRESULT_SUCCESS){
         loginscreen_finish();
         mainscreen_init();
     }
@@ -99,6 +136,7 @@ void loginscreen_init(){
     gtk_entry_set_text(GTK_ENTRY(loginScreen->entryPort),"8008");
 
     g_signal_connect(loginScreen->buttonLogin,"clicked",G_CALLBACK(loginscreen_buttonLogin_clicked),0);
+    g_signal_connect(loginScreen->buttonRegister,"clicked",G_CALLBACK(loginscreen_buttonRegister_clicked),0);
     g_signal_connect(loginScreen->checkboxShowPassword,"toggled",loginscreen_showPassword_toggle,0);
 
     gtk_fixed_put(GTK_FIXED(app->fixedContainer),loginScreen->homeserverContainer,2,2);
@@ -120,7 +158,7 @@ void loginscreen_init(){
     gtk_widget_show_all(app->window);
 }
 void loginscreen_finish(){
-    gtk_container_foreach(GTK_CONTAINER(app->window),(GtkCallback)gtk_widget_destroy,0);
+    gtk_container_foreach(GTK_CONTAINER(app->fixedContainer),(GtkCallback)gtk_widget_destroy,0);
 }
 void loginscreen_checkLoginResult(LoginResult loginResult){
     if(loginResult!=LOGINRESULT_SUCCESS){
@@ -161,12 +199,10 @@ void loginscreen_checkLoginResult(LoginResult loginResult){
     }
 }
 LoginResult loginscreen_login(char* ip,int port,char* username,char* password){
-    if(app->loggedIn){
-        printf("(Warn) [Login] Already logged in!\n");
-        return LOGINRESULT_INTERNAL_ERROR;
+    if(!app->loggedIn){
+        if(!Socket_connect(app->homeserverSocket,ip,port))
+            return REGISTERRESULT_NETWORK_ERROR;
     }
-    if(!Socket_connect(app->homeserverSocket,ip,port))
-        return LOGINRESULT_NETWORK_ERROR;
     char responseData[4096];
     http_sendGETRequest("/_matrix/client/r0/login",ip,app->homeserverSocket);
     Socket_read(app->homeserverSocket,responseData,4096);
@@ -312,4 +348,189 @@ LoginResult loginscreen_login(char* ip,int port,char* username,char* password){
     app->settings->lastHomeserver=(char*)malloc(strlen(ip)+1);
     strcpy(app->settings->lastHomeserver,ip);
     return LOGINRESULT_SUCCESS;
+}
+RegisterResult loginscreen_register(char* ip,int port,char* username,char* password){
+    if(!app->loggedIn){
+        if(!Socket_connect(app->homeserverSocket,ip,port))
+            return REGISTERRESULT_NETWORK_ERROR;
+    }
+    char responseData[4096];
+    char* availableUsernameRequest=(char*)malloc(strlen("/_matrix/client/r0/register/available?username=")+1);
+    strcpy(availableUsernameRequest,"/_matrix/client/r0/register/available?username=");
+    strcat(availableUsernameRequest,username);
+    http_sendGETRequest(availableUsernameRequest,ip,app->homeserverSocket);
+    free(availableUsernameRequest);
+    Socket_read(app->homeserverSocket,responseData,4096);
+    HTTPResponseInfo* responseInfo=http_parseResponse(responseData);
+    if(strcmp(responseInfo->datatype,"application/json")!=0){
+        printf("(Warn) [Register] Server responded with unexpected data type (%s)\n",responseInfo->datatype);
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_WRONG_DATATYPE;
+    }
+    cJSON* jsonData=cJSON_Parse(responseInfo->data);
+    cJSON* available=cJSON_GetObjectItemCaseSensitive(jsonData,"available");
+    if(!available){
+        cJSON_free((void*)jsonData);
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_USERNAME_INVALID;
+    }
+    if(!cJSON_IsBool(available)){
+        cJSON_free((void*)jsonData);
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_INTERNAL_ERROR;
+    }
+    if(!available->valueint){
+        cJSON_free((void*)jsonData);
+        cJSON_free((void*)available);
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_USERNAME_INVALID;
+    }
+    cJSON_free((void*)available);
+    cJSON_free((void*)jsonData);
+    HTTPResponseInfo_destroy(responseInfo);
+    char* registerRequest;
+    if(app->settings->deviceID!=0)
+        registerRequest=matrix_createPasswordRegisterRequest(username,password,0,app->settings->deviceID,0);
+    else
+        registerRequest=matrix_createPasswordRegisterRequest(username,password,"MatrixIM",0,0);
+    http_sendPOSTRequest("/_matrix/client/r0/register",ip,"application/json",strlen(registerRequest),registerRequest,app->homeserverSocket);
+    Socket_read(app->homeserverSocket,responseData,4096);
+    responseInfo=http_parseResponse(responseData);
+    if(strcmp(responseInfo->datatype,"application/json")!=0){
+        printf("(Warn) [Register] Server responded with unexpected data type (%s)\n",responseInfo->datatype);
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_WRONG_DATATYPE;
+    }
+    jsonData=cJSON_Parse(responseInfo->data);
+    if(!jsonData){
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_INTERNAL_ERROR;
+    }
+    if(responseInfo->code!=HTTP_CODE_UNAUTHORIZED){
+        cJSON* errcode=cJSON_GetObjectItemCaseSensitive(jsonData,"errcode");
+        if(!errcode){
+            cJSON_free((void*)jsonData);
+            HTTPResponseInfo_destroy(responseInfo);
+            return REGISTERRESULT_INTERNAL_ERROR;
+        }
+        if(strcmp(errcode->valuestring,"M_WEAK_PASSWORD")==0){ // Password was too weak
+            cJSON_free((void*)jsonData);
+            cJSON_free((void*)errcode);
+            HTTPResponseInfo_destroy(responseInfo);
+            return REGISTERRESULT_WEAK_PASSWORD;
+        }
+        else if(strcmp(errcode->valuestring,"M_UNKNOWN")==0){ // Server didn't recognize provided auth method
+            cJSON_free((void*)jsonData);
+            cJSON_free((void*)errcode);
+            HTTPResponseInfo_destroy(responseInfo);
+            return REGISTERRESULT_SERVER_ERROR;
+        }
+        cJSON_free((void*)jsonData);
+        cJSON_free((void*)errcode);
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_UNKNOWN_ERROR;
+    }
+    cJSON* session=cJSON_GetObjectItemCaseSensitive(jsonData,"session");
+    if(!session){
+        cJSON_free((void*)jsonData);
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_INTERNAL_ERROR;
+    }
+    if(app->settings->deviceID!=0)
+        registerRequest=matrix_createPasswordRegisterRequest(username,password,0,app->settings->deviceID,session->valuestring);
+    else
+        registerRequest=matrix_createPasswordRegisterRequest(username,password,"MatrixIM",0,session->valuestring);
+    HTTPResponseInfo_destroy(responseInfo);
+    cJSON_free((void*)session);
+    cJSON_free((void*)jsonData);
+    http_sendPOSTRequest("/_matrix/client/r0/register",ip,"application/json",strlen(registerRequest),registerRequest,app->homeserverSocket);
+    Socket_read(app->homeserverSocket,responseData,4096);
+    responseInfo=http_parseResponse(responseData);
+    if(responseInfo->code!=HTTP_CODE_OK){
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_INTERNAL_ERROR;
+    
+    }
+    jsonData=cJSON_Parse(responseData);
+    if(!jsonData){
+        HTTPResponseInfo_destroy(responseInfo);
+        return REGISTERRESULT_INTERNAL_ERROR;
+    }
+    cJSON* jsonAccessToken=cJSON_GetObjectItemCaseSensitive(jsonData,"access_token");
+    cJSON* jsonUserID=cJSON_GetObjectItemCaseSensitive(jsonData,"user_id");
+    cJSON* jsonDeviceID=cJSON_GetObjectItemCaseSensitive(jsonData,"device_id");
+    if(!jsonUserID || !jsonAccessToken || !jsonDeviceID){
+        cJSON_free((void*)jsonUserID);
+        cJSON_free((void*)jsonAccessToken);
+        cJSON_free((void*)jsonDeviceID);
+        cJSON_free((void*)jsonData);
+        HTTPResponseInfo_destroy(response);
+        return LOGINRESULT_INTERNAL_ERROR;
+    }
+    int userIDDataLength=0;
+    char** userIDData=split(jsonUserID->valuestring,':',&userIDDataLength);
+    if(userIDDataLength!=2){
+        HTTPResponseInfo_destroy(response);
+        cJSON_free((void*)jsonUserID);
+        cJSON_free((void*)jsonAccessToken);
+        cJSON_free((void*)jsonDeviceID);
+        cJSON_free((void*)jsonData);
+        array_free((void**)userIDData,userIDDataLength);
+        return LOGINRESULT_INTERNAL_ERROR;
+    }
+    app->loginInfo->homeserverName=(char*)malloc(strlen(userIDData[1])+1);
+    strcpy(app->loginInfo->homeserverName,userIDData[1]);
+    printf("(Log) [Login] User ID: %s\n",jsonUserID->valuestring);
+    array_free((void**)userIDData,userIDDataLength);
+    HTTPResponseInfo_destroy(response);
+    cJSON_free((void*)jsonUserID);
+    cJSON_free((void*)jsonAccessToken);
+    cJSON_free((void*)jsonDeviceID);
+    cJSON_free((void*)jsonData);
+    app->loggedIn=true;
+    app->settings->wasLoggedIn=true;
+    app->settings->deviceID=app->loginInfo->deviceID;
+    app->settings->lastPort=port;
+    app->settings->lastUsername=(char*)malloc(strlen(username)+1);
+    strcpy(app->settings->lastUsername,username);
+    app->settings->lastPassword=(char*)malloc(strlen(password)+1);
+    strcpy(app->settings->lastPassword,password);
+    app->settings->lastHomeserver=(char*)malloc(strlen(ip)+1);
+    strcpy(app->settings->lastHomeserver,ip);
+    return REGISTERRESULT_SUCCESS;
+}
+void loginscreen_checkRegisterResult(RegisterResult registerResult){
+    if(registerResult!=REGISTERRESULT_SUCCESS){
+        char* information;
+        switch(registerResult){
+        case REGISTERRESULT_INTERNAL_ERROR:
+            information="Failed to register: internal error";
+            break;
+        case REGISTERRESULT_SERVER_ERROR:
+            information="Failed to register: server error";
+            break;
+        case REGISTERRESULT_NETWORK_ERROR:
+            information="Failed to connect to homeserver: network error";
+            break;
+        case REGISTERRESULT_USERNAME_INVALID:
+            information="Failed to register: username already taken or it is invalid";
+            break;
+        case REGISTERRESULT_WEAK_PASSWORD:
+            information="Failed to register: password too weak";
+            break;
+        case REGISTERRESULT_UNSUPPORTED_AUTH:
+            information="Failed to register: unsupported auth";
+            break;
+        case REGISTERRESULT_WRONG_DATATYPE:
+            information="Failed to register: server responded with unexpected datatype";
+            break;
+        default:
+            information="Unknown error";
+            break;
+        }
+        Socket_close(app->homeserverSocket);
+        GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,"%s",information);
+        gtk_dialog_run(GTK_DIALOG(message));
+        gtk_widget_destroy(message);
+    }
 }

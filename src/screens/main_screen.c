@@ -8,10 +8,16 @@ MainScreen* MainScreen_new(){
     return output;
 }
 MainScreen* mainScreen;
+void mainscreen_sendMessage(char* msg){
+    //TODO
+}
 void mainscreen_messageEntry_key(GtkWidget* widget,gpointer data){
     unsigned int key;
-    gdk_event_get_keyval(event,&key);
-    printf("%d\n",key);
+    if(key==65293){ // Enter
+        char* msg=gtk_entry_get_text(GTK_ENTRY(mainScreen->messageEntry));
+        if(strcmp(msg,"")!=0)
+            mainscreen_sendMessage(msg);
+    }
 }
 void mainscreen_init(){
     mainScreen=MainScreen_new();

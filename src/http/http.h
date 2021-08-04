@@ -4,7 +4,8 @@
 extern const char* HTTP_VERSION;
 #define HTTP_CODE_OK 200
 #define HTTP_CODE_NOT_FOUND 404
-#define HTTP_CODE_BAD_REQUEST 401
+#define HTTP_CODE_BAD_REQUEST 400
+#define HTTP_CODE_UNAUTHORIZED 401
 typedef struct HTTPResponseInfo{
     char* version;
     int code;

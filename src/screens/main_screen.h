@@ -14,6 +14,7 @@ typedef struct MainScreen{
 MainScreen* MainScreen_new();
 extern MainScreen* mainScreen;
 void mainscreen_messageEntry_key(GtkWidget* widget,gpointer data);
+void mainscreen_sendMessage(char* msg);
 void mainscreen_init();
 
 #endif

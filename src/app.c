@@ -77,6 +77,8 @@ void ApplicationSettings_save(ApplicationSettings* settings){
     char* configDirCopy=(char*)malloc(strlen(app->configDir)+1);
     strcpy(configDirCopy,app->configDir);
     printf("(Log) [Config] Saving config to %s\n",strcat(configDirCopy,"/config.json"));
+    if(!folderExists(app->configDir))
+        createFolder(app->configDir);
     FILE* file=fopen(configDirCopy,"w");
     if(!file){
         printf("(Warn) [Config] Failed to save config\n");
