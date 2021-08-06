@@ -3,7 +3,7 @@
 MatrixIM is [Matrix](https://www.matrix.org) client that aims to be fast, reliable and have low resource usage. MatrixIM is written in C, and uses GTK+ 3
 as GUI library.
 ## Development status
-At the moment MatrixIM is able to login into Matrix homeserver via HTTP API.
+Check TODO file for informations
 ## Building
 ### Windows
 Windows is unsupported at the moment.
