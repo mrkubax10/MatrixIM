@@ -159,6 +159,7 @@ void loginscreen_init(){
 }
 void loginscreen_finish(){
     gtk_container_foreach(GTK_CONTAINER(app->fixedContainer),(GtkCallback)gtk_widget_destroy,0);
+    free(loginScreen);
 }
 void loginscreen_checkLoginResult(LoginResult loginResult){
     if(loginResult!=LOGINRESULT_SUCCESS){
@@ -262,7 +263,7 @@ LoginResult loginscreen_login(char* ip,int port,char* username,char* password){
         loginRequest=matrix_createPasswordLoginRequest(username,password,0,app->settings->deviceID);
     else
         loginRequest=matrix_createPasswordLoginRequest(username,password,"MatrixIM",0);
-    http_sendPOSTRequest("/_matrix/client/r0/login",ip,"application/json",strlen(loginRequest),loginRequest,app->homeserverSocket);
+    http_sendPOSTRequest("/_matrix/client/r0/login",ip,"application/json",strlen(loginRequest),loginRequest,0,app->homeserverSocket);
     free(loginRequest);
     Socket_read(app->homeserverSocket,responseData,4096);
     response=http_parseResponse(responseData);
@@ -393,7 +394,7 @@ RegisterResult loginscreen_register(char* ip,int port,char* username,char* passw
         registerRequest=matrix_createPasswordRegisterRequest(username,password,0,app->settings->deviceID,0);
     else
         registerRequest=matrix_createPasswordRegisterRequest(username,password,"MatrixIM",0,0);
-    http_sendPOSTRequest("/_matrix/client/r0/register",ip,"application/json",strlen(registerRequest),registerRequest,app->homeserverSocket);
+    http_sendPOSTRequest("/_matrix/client/r0/register",ip,"application/json",strlen(registerRequest),registerRequest,0,app->homeserverSocket);
     Socket_read(app->homeserverSocket,responseData,4096);
     responseInfo=http_parseResponse(responseData);
     if(strcmp(responseInfo->datatype,"application/json")!=0){
@@ -443,7 +444,7 @@ RegisterResult loginscreen_register(char* ip,int port,char* username,char* passw
     HTTPResponseInfo_destroy(responseInfo);
     cJSON_free((void*)session);
     cJSON_free((void*)jsonData);
-    http_sendPOSTRequest("/_matrix/client/r0/register",ip,"application/json",strlen(registerRequest),registerRequest,app->homeserverSocket);
+    http_sendPOSTRequest("/_matrix/client/r0/register",ip,"application/json",strlen(registerRequest),registerRequest,0,app->homeserverSocket);
     Socket_read(app->homeserverSocket,responseData,4096);
     responseInfo=http_parseResponse(responseData);
     if(responseInfo->code!=HTTP_CODE_OK){
@@ -464,13 +465,13 @@ RegisterResult loginscreen_register(char* ip,int port,char* username,char* passw
         cJSON_free((void*)jsonAccessToken);
         cJSON_free((void*)jsonDeviceID);
         cJSON_free((void*)jsonData);
-        HTTPResponseInfo_destroy(response);
+        HTTPResponseInfo_destroy(responseInfo);
         return LOGINRESULT_INTERNAL_ERROR;
     }
     int userIDDataLength=0;
     char** userIDData=split(jsonUserID->valuestring,':',&userIDDataLength);
     if(userIDDataLength!=2){
-        HTTPResponseInfo_destroy(response);
+        HTTPResponseInfo_destroy(responseInfo);
         cJSON_free((void*)jsonUserID);
         cJSON_free((void*)jsonAccessToken);
         cJSON_free((void*)jsonDeviceID);
@@ -482,7 +483,7 @@ RegisterResult loginscreen_register(char* ip,int port,char* username,char* passw
     strcpy(app->loginInfo->homeserverName,userIDData[1]);
     printf("(Log) [Login] User ID: %s\n",jsonUserID->valuestring);
     array_free((void**)userIDData,userIDDataLength);
-    HTTPResponseInfo_destroy(response);
+    HTTPResponseInfo_destroy(responseInfo);
     cJSON_free((void*)jsonUserID);
     cJSON_free((void*)jsonAccessToken);
     cJSON_free((void*)jsonDeviceID);
