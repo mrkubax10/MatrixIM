@@ -112,10 +112,19 @@ HTTPResponseInfo* http_parseResponse(char* response){
     array_free((void**)lines,linesCount);
     return output;
 }
-void http_sendGETRequest(char* path,char* host,Socket* sock){
-    int length=snprintf(0,0,"GET %s %s\r\nHost: %s\r\n\r\n",path,HTTP_VERSION,host);
-    char* request=(char*)malloc(length+1);
-    snprintf(request,length+1,"GET %s %s\r\nHost: %s\r\n\r\n",path,HTTP_VERSION,host);
+void http_sendGETRequest(char* path,char* host,Socket* sock,char* accessToken){
+    int length;
+    char* request;
+    if(accessToken!=0){
+        length=snprintf(0,0,"GET %s %s\r\nHost: %s\r\nAuthorization: Bearer %s\r\n\r\n",path,HTTP_VERSION,host,accessToken);
+        request=(char*)malloc(length+1);
+        snprintf(request,length+1,"GET %s %s\r\nHost: %s\r\nAuthorization: Bearer %s\r\n\r\n",path,HTTP_VERSION,host,accessToken);
+    }
+    else{
+        length=snprintf(0,0,"GET %s %s\r\nHost: %s\r\n\r\n",path,HTTP_VERSION,host);
+        request=(char*)malloc(length+1);
+        snprintf(request,length+1,"GET %s %s\r\nHost: %s\r\n\r\n",path,HTTP_VERSION,host);
+    }
     Socket_send(sock,request,length);
     free(request);
 }
@@ -134,4 +143,35 @@ void http_sendPOSTRequest(char* path,char* host,char* datatype,int datalength,ch
     }
     Socket_send(sock,request,length);
     free(request);
+}
+char* http_toHTTPURL(char* url){
+    int length=0;
+    for(int i=0; i<strlen(url); i++){
+        if(url[i]=='!' || url[i]==':')
+            length+=3;
+        else
+            length++;
+    }
+    char* output=malloc(length+1);
+    int index=0;
+    for(int i=0; i<strlen(url); i++){
+        if(url[i]=='!'){
+            output[index]='%';
+            output[index+1]='2';
+            output[index+2]='1';
+            index+=3;
+        }
+        else if(url[i]==':'){
+            output[index]='%';
+            output[index+1]='3';
+            output[index+2]='A';
+            index+=3;
+        }
+        else{
+            output[index]=url[i];
+            index++;
+        }
+    }
+    output[length]=0;
+    return output;
 }

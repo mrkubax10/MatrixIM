@@ -11,7 +11,6 @@ int main(int argc,char** args){
     app->loggedIn=false;
     app->configDir=getConfigDir();
     app->settings=ApplicationSettings_new();
-    printf("%s\n",app->configDir);
     ApplicationSettings_load(app->settings);
     GtkApplication* application=gtk_application_new("pl.mrkubax10.matrixim",G_APPLICATION_FLAGS_NONE);
     g_signal_connect(application,"activate",G_CALLBACK(application_activate),0);

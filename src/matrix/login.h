@@ -8,5 +8,4 @@ typedef struct LoginInfo{
 } LoginInfo;
 LoginInfo* LoginInfo_new();
 char* matrix_createPasswordLoginRequest(char* username,char* password,char* deviceName,char* deviceID);
-char* matrix_createLogoutRequest(char* accessToken);
 #endif

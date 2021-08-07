@@ -9,6 +9,7 @@
 #include <cjson/cJSON.h>
 MainScreen* MainScreen_new(){
     MainScreen* output=(MainScreen*)malloc(sizeof(MainScreen));
+    output->enteredRooms=Vector_new();
     return output;
 }
 MainScreen* mainScreen;
@@ -37,7 +38,7 @@ void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData
         char* path=(char*)malloc(pathLength+1);
         // Obtain room ID from room alias
         snprintf(path,pathLength+1,"/_matrix/client/r0/directory/room/%s",room);
-        http_sendGETRequest(path,app->loginInfo->homeserverName,app->homeserverSocket);
+        http_sendGETRequest(path,app->loginInfo->homeserverName,app->homeserverSocket,0);
         free(path);
         char responseData[4096];
         Socket_read(app->homeserverSocket,responseData,4096);
@@ -81,7 +82,7 @@ void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData
         path=(char*)malloc(pathLength+1);
         snprintf(path,pathLength+1,"/_matrix/client/r0/rooms/%s/join",roomID->valuestring);
         http_sendPOSTRequest(path,app->loginInfo->homeserverName,"application/json",0,"",app->loginInfo->accessToken,app->homeserverSocket);
-        cJSON_free((void*)roomID);
+        
         cJSON_free((void*)jsonData);
         free(path);
         Socket_read(app->homeserverSocket,responseData,4096);
@@ -95,15 +96,96 @@ void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData
         GtkTreeIter iter;
         gtk_tree_store_append(GTK_TREE_STORE(mainScreen->listRoomsStore),&iter,0);
         gtk_tree_store_set(GTK_TREE_STORE(mainScreen->listRoomsStore),&iter,0,room,-1);
+        MatrixRoom* matrixRoom=MatrixRoom_new();
+        matrixRoom->roomAlias=room;
+        matrixRoom->roomID=malloc(strlen(roomID->valuestring)+1);
+        strcpy(matrixRoom->roomID,roomID->valuestring);
+        cJSON_free((void*)roomID);
+        Vector_push(mainScreen->enteredRooms,(void*)matrixRoom);
     }
+}
+void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userdata){
+    gtk_show_about_dialog(GTK_WINDOW(app->window),
+        "name","MatrixIM - free and open-source Matrix client",
+        "version","git",
+        "copyright","2021 (C) mrkubax10",
+        "logo-icon-name","gtk-about",
+        0);
 }
 void mainscreen_sendMessage(char* msg){
     //TODO
 }
+void mainscreen_synchronizeEnteredRooms(){
+    http_sendGETRequest("/_matrix/client/r0/joined_rooms",app->loginInfo->homeserverName,app->homeserverSocket,app->loginInfo->accessToken);
+    char responseData[4096];
+    Socket_read(app->homeserverSocket,responseData,4096);
+    HTTPResponseInfo* response=http_parseResponse(responseData);
+    if(response->code!=HTTP_CODE_OK){
+        mainscreen_showErrorDialog("Failed to synchronize entered rooms");
+        mainscreen_finish();
+        loginscreen_init();
+        return;
+    }
+    cJSON* jsonData=cJSON_Parse(response->data);
+    if(!jsonData){
+        mainscreen_showErrorDialog("Failed to parse entered rooms data");
+        mainscreen_finish();
+        loginscreen_init();
+        return;
+    }
+    cJSON* enteredRooms=cJSON_GetObjectItemCaseSensitive(jsonData,"joined_rooms");
+    if(!cJSON_IsArray(enteredRooms)){
+        mainscreen_showErrorDialog("Failed to parse entered rooms data");
+        mainscreen_finish();
+        loginscreen_init();
+        return;
+    }
+    cJSON* room=0;
+    for(int i=0; (room=cJSON_GetArrayItem(enteredRooms,i)); i++){
+        printf("%d\n",room);
+        int pathLength=snprintf(0,0,"/_matrix/client/r0/rooms/%s/aliases",room->valuestring);
+        char* path=malloc(pathLength+1);
+        snprintf(path,pathLength+1,"/_matrix/client/r0/rooms/%s/aliases",room->valuestring);
+        char* url=http_toHTTPURL(path);
+        printf("%s\n",url);
+        http_sendGETRequest(url,app->loginInfo->homeserverName,app->homeserverSocket,app->loginInfo->accessToken);
+        free(path);
+        free(url);
+        Socket_read(app->homeserverSocket,responseData,4096);
+        printf("%s\n",responseData);
+        HTTPResponseInfo* responseInfo=http_parseResponse(responseData);
+        cJSON* roomAliasesData=cJSON_Parse(responseInfo->data);
+        if(!roomAliasesData){
+            HTTPResponseInfo_destroy(responseInfo);
+            continue;
+        }
+        cJSON* roomAliases=cJSON_GetObjectItemCaseSensitive(roomAliasesData,"aliases");
+        if(!roomAliases){
+            HTTPResponseInfo_destroy(responseInfo);
+            cJSON_free((void*)roomAliasesData);
+            continue;
+        }
+        cJSON* roomAlias=cJSON_GetArrayItem(roomAliases,0);
+        GtkTreeIter iter;
+        gtk_tree_store_append(GTK_TREE_STORE(mainScreen->listRoomsStore),&iter,0);
+        gtk_tree_store_set(GTK_TREE_STORE(mainScreen->listRoomsStore),&iter,0,roomAlias->valuestring,-1);
+        MatrixRoom* matrixRoom=MatrixRoom_new();
+        matrixRoom->roomAlias=malloc(strlen(roomAlias->valuestring)+1);
+        strcpy(matrixRoom->roomAlias,roomAlias->valuestring);
+        matrixRoom->roomID=malloc(strlen(room->valuestring)+1);
+        strcpy(matrixRoom->roomID,room->valuestring);
+        Vector_push(mainScreen->enteredRooms,(void*)matrixRoom);
+        HTTPResponseInfo_destroy(responseInfo);
+        cJSON_free((void*)roomAlias);
+        cJSON_free((void*)roomAliases);
+        cJSON_free((void*)roomAliasesData);
+    }
+    cJSON_free((void*)enteredRooms);
+    cJSON_free((void*)jsonData);
+    HTTPResponseInfo_destroy(response);
+}
 bool mainscreen_logout(){
-    char* logoutRequest=matrix_createLogoutRequest(app->loginInfo->accessToken);
-    printf("%s\n",logoutRequest);
-    http_sendPOSTRequest("/_matrix/client/r0/logout",app->loginInfo->homeserverName,"",0,"",0,app->homeserverSocket);
+    http_sendPOSTRequest("/_matrix/client/r0/logout",app->loginInfo->homeserverName,"",0,"",app->loginInfo->accessToken,app->homeserverSocket);
     char responseData[4096];
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* response=http_parseResponse(responseData);
@@ -172,6 +254,7 @@ void mainscreen_init(){
     g_signal_connect(mainScreen->fileLogout,"activate",mainscreen_menuFileLogout_activated,0);
     g_signal_connect(mainScreen->fileQuit,"activate",mainscreen_menuFileQuit_activated,0);
     g_signal_connect(mainScreen->matrixJoinRoom,"activate",mainscreen_menuMatrixJoinRoom_activated,0);
+    g_signal_connect(mainScreen->helpAbout,"activate",mainscreen_menuHelpAbout_activated,0);
 
     gtk_fixed_put(GTK_FIXED(app->fixedContainer),mainScreen->containerContent,0,0);
     gtk_grid_attach(GTK_GRID(mainScreen->containerContent),mainScreen->menuBar,0,0,64,2);
@@ -181,15 +264,18 @@ void mainscreen_init(){
     gtk_grid_attach_next_to(GTK_GRID(mainScreen->containerContent),mainScreen->messageEntry,mainScreen->containerSidebar,GTK_POS_BOTTOM,20,5);
     gtk_grid_attach_next_to(GTK_GRID(mainScreen->containerContent),mainScreen->chat,mainScreen->containerSidebar,GTK_POS_RIGHT,16,16);
     gtk_widget_show_all(app->window);
+    mainscreen_synchronizeEnteredRooms();
 }
 void mainscreen_finish(){
     gtk_container_foreach(GTK_CONTAINER(app->fixedContainer),(GtkCallback)gtk_widget_destroy,0);
     free(mainScreen);
 }
 char* mainscreen_showInputDialog(char* msg){
-    GtkWidget* dialog=gtk_dialog_new_with_buttons(msg,GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_ACCEPT,"Cancel",GTK_RESPONSE_CANCEL,0);
+    GtkWidget* dialog=gtk_dialog_new_with_buttons("Input",GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,"OK",GTK_RESPONSE_ACCEPT,"Cancel",GTK_RESPONSE_CANCEL,0);
     GtkWidget* contentArea=gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    GtkWidget* label=gtk_label_new(msg);
     GtkWidget* entry=gtk_entry_new();
+    gtk_container_add(GTK_CONTAINER(contentArea),label);
     gtk_container_add(GTK_CONTAINER(contentArea),entry);
     gtk_widget_show_all(dialog);
     int res=gtk_dialog_run(GTK_DIALOG(dialog));
@@ -197,7 +283,7 @@ char* mainscreen_showInputDialog(char* msg){
     char* output=(char*)malloc(strlen(text)+1);
     strcpy(output,text);
     gtk_widget_destroy(dialog);
-    return (res==-3?output:0); //-3 is OK button ID
+    return ((res==-3 && strcmp(output,"")!=0)?output:0); //-3 is OK button ID
 }
 void mainscreen_showErrorDialog(char* msg){
     GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,msg);

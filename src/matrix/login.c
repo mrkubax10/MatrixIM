@@ -20,10 +20,3 @@ char* matrix_createPasswordLoginRequest(char* username,char* password,char* devi
         return output;
     }
 }
-char* matrix_createLogoutRequest(char* accessToken){
-    cJSON* root=cJSON_CreateObject();
-    cJSON_AddStringToObject(root,"access_token",accessToken);
-    char* output=cJSON_Print(root);
-    cJSON_free((void*)root);
-    return output;
-}

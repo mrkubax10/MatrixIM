@@ -3,6 +3,7 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 #include "matrix/room.h"
+#include "utils/vector.h"
 typedef struct MainScreen{
     GtkWidget* containerSidebar;
     GtkWidget* containerContent;
@@ -25,7 +26,7 @@ typedef struct MainScreen{
     GtkWidget* helpAbout;
     GtkTreeStore* listFriendsStore;
     GtkTreeStore* listRoomsStore;
-    MatrixRoom** enteredRooms;
+    Vector* enteredRooms;
 } MainScreen;
 MainScreen* MainScreen_new();
 extern MainScreen* mainScreen;
@@ -33,7 +34,9 @@ void mainscreen_messageEntry_key(GtkWidget* widget,gpointer userData);
 void mainscreen_menuFileQuit_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_menuFileLogout_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData);
+void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_sendMessage(char* msg);
+void mainscreen_synchronizeEnteredRooms();
 bool mainscreen_logout();
 void mainscreen_init();
 void mainscreen_finish();

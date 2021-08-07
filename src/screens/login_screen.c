@@ -205,7 +205,7 @@ LoginResult loginscreen_login(char* ip,int port,char* username,char* password){
             return REGISTERRESULT_NETWORK_ERROR;
     }
     char responseData[4096];
-    http_sendGETRequest("/_matrix/client/r0/login",ip,app->homeserverSocket);
+    http_sendGETRequest("/_matrix/client/r0/login",ip,app->homeserverSocket,0);
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* response=http_parseResponse(responseData);
     if(response->code!=HTTP_CODE_OK){
@@ -359,7 +359,7 @@ RegisterResult loginscreen_register(char* ip,int port,char* username,char* passw
     char* availableUsernameRequest=(char*)malloc(strlen("/_matrix/client/r0/register/available?username=")+1);
     strcpy(availableUsernameRequest,"/_matrix/client/r0/register/available?username=");
     strcat(availableUsernameRequest,username);
-    http_sendGETRequest(availableUsernameRequest,ip,app->homeserverSocket);
+    http_sendGETRequest(availableUsernameRequest,ip,app->homeserverSocket,0);
     free(availableUsernameRequest);
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* responseInfo=http_parseResponse(responseData);
