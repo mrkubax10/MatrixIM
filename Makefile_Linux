@@ -2,7 +2,7 @@
 CC        := gcc
 LD        := gcc
 
-MODULES   := . screens network http matrix
+MODULES   := . screens network http matrix utils
 SRC_DIR   := $(addprefix src/,$(MODULES))
 BUILD_DIR := $(addprefix build/,$(MODULES))
 

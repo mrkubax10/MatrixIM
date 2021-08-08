@@ -26,3 +26,10 @@ void Vector_destroy(Vector* vector,bool destroyObjects){
     free(vector->data);
     free(vector);
 }
+int Vector_find(Vector* vector,void* obj){
+    for(unsigned int i=0; i<vector->capacity; i++){
+        if(vector->data[i]==obj)
+            return (int)i;
+    }
+    return -1;
+}
