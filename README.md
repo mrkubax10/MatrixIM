@@ -13,6 +13,7 @@ You also need C compiler for example GCC.\
 After you install needed libraries enter MatrixIM folder and run commands:
 ```
 mkdir build
+cd build
 cmake ..
 make
 ```
