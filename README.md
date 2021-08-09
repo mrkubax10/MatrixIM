@@ -10,6 +10,11 @@ Windows is unsupported at the moment.
 ### Linux
 MatrixIM requires following libraries: [GTK+ 3](https://www.gtk.org), [cJSON](https://github.com/DaveGamble/cJSON)\
 You also need C compiler for example GCC.\
-After you install needed libraries enter MatrixIM folder and run command `make -f Makefile_Linux`
+After you install needed libraries enter MatrixIM folder and run commands:
+```
+mkdir build
+cmake ..
+make
+```
 ### MacOS X
 MatrixIM should work on MacOS X but it is untested. Feedback is welcome.
