@@ -27,6 +27,7 @@ typedef struct MainScreen{
     GtkTreeStore* listFriendsStore;
     GtkTreeStore* listRoomsStore;
     Vector* enteredRooms;
+    pthread_t* matrixEventThread;
 } MainScreen;
 MainScreen* MainScreen_new();
 extern MainScreen* mainScreen;
@@ -39,6 +40,7 @@ void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_listRooms_changed(GtkWidget* widget,gpointer userData);
 void mainscreen_sendMessage(char* msg);
 void mainscreen_synchronizeEnteredRooms();
+void mainscreen_eventListener(void* data);
 bool mainscreen_logout();
 void mainscreen_init();
 void mainscreen_finish();

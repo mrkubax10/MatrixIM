@@ -8,6 +8,7 @@
 #include "screens/login_screen.h"
 #include <cjson/cJSON.h>
 #include "utils/message.h"
+#include <pthread.h>
 MainScreen* MainScreen_new(){
     MainScreen* output=(MainScreen*)malloc(sizeof(MainScreen));
     output->enteredRooms=Vector_new();
@@ -35,80 +36,17 @@ void mainscreen_menuFileLogout_activated(GtkWidget* widget,gpointer userData){
 void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData){
     char* room=showInputDialog("Room alias (for example #room:homeserver)");
     if(room!=0){
-        int pathLength=snprintf(0,0,"/_matrix/client/r0/directory/room/%s",room);
-        char* path=(char*)malloc(pathLength+1);
-        // Obtain room ID from room alias
-        snprintf(path,pathLength+1,"/_matrix/client/r0/directory/room/%s",room);
-        http_sendGETRequest(path,app->loginInfo->homeserverName,app->homeserverSocket,0);
-        free(path);
-        char responseData[4096];
-        Socket_read(app->homeserverSocket,responseData,4096);
-        HTTPResponseInfo* response=http_parseResponse(responseData);
-        if(response->code!=HTTP_CODE_OK){
-            cJSON* jsonData=cJSON_Parse(response->data);
-            char* errorMsg=(char*)malloc(strlen("Failed to enter room")+1);
-            strcpy(errorMsg,"Failed to enter room");
-            printf("%s\n",response->data);
-            if(jsonData){
-                cJSON* error=cJSON_GetObjectItemCaseSensitive(jsonData,"error");
-                if(error){
-                    int length=snprintf(0,0,"Failed to enter room: %s",error->valuestring);
-                    free(errorMsg);
-                    errorMsg=(char*)malloc(length+1);
-                    snprintf(errorMsg,length+1,"Failed to enter room: %s",error->valuestring);
-                    cJSON_free((void*)error);
-                }
-                cJSON_free((void*)jsonData);
-            }
-            showErrorDialog(errorMsg);
-            HTTPResponseInfo_destroy(response);
-            free(errorMsg);
+        char* roomID=matrix_joinRoom(room);
+        if(!roomID)
             return;
-        }
-        cJSON* jsonData=cJSON_Parse(response->data);
-        if(!jsonData){
-            showErrorDialog("Failed to parse response while entering room");
-            HTTPResponseInfo_destroy(response);
-            return;
-        }
-        cJSON* roomID=cJSON_GetObjectItemCaseSensitive(jsonData,"room_id");
-        if(!roomID){
-            showErrorDialog("Failed to parse response while entering room");
-            HTTPResponseInfo_destroy(response);
-            cJSON_free((void*)jsonData);
-            return;
-        }
-        HTTPResponseInfo_destroy(response);
-        for(unsigned int i=0; i<mainScreen->enteredRooms->capacity; i++){
-            MatrixRoom* matrixRoom=mainScreen->enteredRooms->data[i];
-            if(strcmp(matrixRoom->roomID,roomID->valuestring)==0){
-                showInfoDialog("You already entered this room");
-                return;
-            }
-        }
-        pathLength=snprintf(0,0,"/_matrix/client/r0/rooms/%s/join",roomID->valuestring);
-        path=(char*)malloc(pathLength+1);
-        snprintf(path,pathLength+1,"/_matrix/client/r0/rooms/%s/join",roomID->valuestring);
-        http_sendPOSTRequest(path,app->loginInfo->homeserverName,"application/json",0,"",app->loginInfo->accessToken,app->homeserverSocket);
-        
-        cJSON_free((void*)jsonData);
-        free(path);
-        Socket_read(app->homeserverSocket,responseData,4096);
-        response=http_parseResponse(responseData);
-        if(response->code!=HTTP_CODE_OK){
-            showErrorDialog("Failed to enter room");
-            HTTPResponseInfo_destroy(response);
-            return;
-        }
-        HTTPResponseInfo_destroy(response);
         GtkTreeIter iter;
         gtk_tree_store_append(GTK_TREE_STORE(mainScreen->listRoomsStore),&iter,0);
         gtk_tree_store_set(GTK_TREE_STORE(mainScreen->listRoomsStore),&iter,0,room,-1);
         MatrixRoom* matrixRoom=MatrixRoom_new();
         matrixRoom->roomAlias=room;
-        matrixRoom->roomID=malloc(strlen(roomID->valuestring)+1);
-        strcpy(matrixRoom->roomID,roomID->valuestring);
-        cJSON_free((void*)roomID);
+        matrixRoom->roomID=malloc(strlen(roomID)+1);
+        strcpy(matrixRoom->roomID,roomID);
+        free(roomID);
         Vector_push(mainScreen->enteredRooms,(void*)matrixRoom);
     }
 }
@@ -127,24 +65,12 @@ void mainscreen_menuMatrixLeaveRoom_activated(GtkWidget* widget,gpointer userDat
         GtkTreePath* treePath=selectedRows->data;
         int selectionID=atoi(gtk_tree_path_to_string(treePath));
 
-        int pathLength=snprintf(0,0,"/_matrix/client/r0/rooms/%s/leave",((MatrixRoom*)(mainScreen->enteredRooms->data[selectionID]))->roomID);
-        char* path=malloc(pathLength+1);
-        snprintf(path,pathLength+1,"/_matrix/client/r0/rooms/%s/leave",((MatrixRoom*)(mainScreen->enteredRooms->data[selectionID]))->roomID);
-        char* url=http_toHTTPURL(path);
-        free(path);
-        http_sendPOSTRequest(url,app->loginInfo->homeserverName,"",0,"",app->loginInfo->accessToken,app->homeserverSocket);
-        free(url);
-        char responseData[4096];
-        Socket_read(app->homeserverSocket,responseData,4096);
-        HTTPResponseInfo* response=http_parseResponse(responseData);
-        if(response->code!=HTTP_CODE_OK){
-            showErrorDialog("Failed to leave room");
-            HTTPResponseInfo_destroy(response);
+        if(!matrix_leaveRoom(((MatrixRoom*)(mainScreen->enteredRooms->data[selectionID]))->roomID))
             return;
-        }
         GtkTreeIter iter;
         gtk_tree_model_get_iter(listRoomsModel,&iter,treePath);
         gtk_tree_store_remove(mainScreen->listRoomsStore,&iter);
+        Vector_delete(mainScreen->enteredRooms,selectionID);
     }
 }
 void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userdata){
@@ -223,6 +149,14 @@ void mainscreen_synchronizeEnteredRooms(){
     cJSON_free((void*)enteredRooms);
     cJSON_free((void*)jsonData);
     HTTPResponseInfo_destroy(response);
+}
+void mainscreen_eventListener(void* data){
+    //char message[4096];
+    //while(mainScreen){
+    //    printf("Waiting for message\n");
+    //    Socket_read(app->homeserverSocket,message,4096);
+    //    printf("%s\n",message);
+    //}
 }
 bool mainscreen_logout(){
     http_sendPOSTRequest("/_matrix/client/r0/logout",app->loginInfo->homeserverName,"",0,"",app->loginInfo->accessToken,app->homeserverSocket);
@@ -306,8 +240,10 @@ void mainscreen_init(){
     gtk_grid_attach_next_to(GTK_GRID(mainScreen->containerContent),mainScreen->chat,mainScreen->containerSidebar,GTK_POS_RIGHT,16,16);
     gtk_widget_show_all(app->window);
     mainscreen_synchronizeEnteredRooms();
+    pthread_create(&mainScreen->matrixEventThread,0,mainscreen_eventListener,0);
 }
 void mainscreen_finish(){
     gtk_container_foreach(GTK_CONTAINER(app->fixedContainer),(GtkCallback)gtk_widget_destroy,0);
     free(mainScreen);
+    mainScreen=0;
 }

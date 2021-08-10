@@ -7,7 +7,7 @@ Vector* Vector_new(){
 }
 void Vector_push(Vector* vector,void* obj){
     vector->capacity++;
-    vector->data=realloc(vector->data,vector->capacity);
+    vector->data=realloc(vector->data,vector->capacity*sizeof(void*));
     vector->data[vector->capacity-1]=obj;
 }
 void Vector_pop(Vector* vector){
@@ -15,7 +15,7 @@ void Vector_pop(Vector* vector){
         vector->capacity++;
         return;
     }
-    vector->data=realloc(vector->data,vector->capacity);
+    vector->data=realloc(vector->data,vector->capacity*sizeof(void*));
 }
 void Vector_destroy(Vector* vector,bool destroyObjects){
     if(destroyObjects){
@@ -25,6 +25,19 @@ void Vector_destroy(Vector* vector,bool destroyObjects){
     }
     free(vector->data);
     free(vector);
+}
+void Vector_delete(Vector* vector,unsigned int index){
+    if(index>=vector->capacity)
+        return;
+    if(index==vector->capacity-1){
+        Vector_pop(vector);
+        return;
+    }
+    for(int i=index+1; i<vector->capacity; i++){
+        vector->data[i-1]=vector->data[i];
+    }
+    vector->capacity--;
+    vector->data=realloc(vector->data,vector->capacity*sizeof(void*));
 }
 int Vector_find(Vector* vector,void* obj){
     for(unsigned int i=0; i<vector->capacity; i++){
