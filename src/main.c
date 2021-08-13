@@ -6,6 +6,7 @@
 #include "http/http.h"
 #include "utils/filesystem.h"
 int main(int argc,char** args){
+    srand(time(0));
     app=(Application*)malloc(sizeof(Application));
     app->loginInfo=LoginInfo_new();
     app->loggedIn=false;

@@ -144,6 +144,22 @@ void http_sendPOSTRequest(char* path,char* host,char* datatype,int datalength,ch
     Socket_send(sock,request,length);
     free(request);
 }
+void http_sendPUTRequest(char* path,char* host,char* datatype,int datalength,char* data,char* accessToken,Socket* sock){
+    char* request;
+    int length;
+    if(accessToken!=0){
+        length=snprintf(0,0,"PUT %s %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nAuthorization: Bearer %s\r\nHost: %s\r\n\r\n%s",path,HTTP_VERSION,datatype,datalength,accessToken,host,data);
+        request=(char*)malloc(length+1);
+        snprintf(request,length+1,"PUT %s %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nAuthorization: Bearer %s\r\nHost: %s\r\n\r\n%s",path,HTTP_VERSION,datatype,datalength,accessToken,host,data);
+    }
+    else{
+        length=snprintf(0,0,"PUT %s %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nHost: %s\r\n\r\n%s",path,HTTP_VERSION,datatype,datalength,host,data);
+        request=(char*)malloc(length+1);
+        snprintf(request,length+1,"PUT %s %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nHost: %s\r\n\r\n%s",path,HTTP_VERSION,datatype,datalength,host,data);
+    }
+    Socket_send(sock,request,length);
+    free(request);
+}
 char* http_toHTTPURL(char* url){
     int length=0;
     for(int i=0; i<strlen(url); i++){

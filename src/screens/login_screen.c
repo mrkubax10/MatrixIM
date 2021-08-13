@@ -8,6 +8,7 @@
 #include "utils.h"
 #include <stdlib.h>
 #include "screens/main_screen.h"
+#include "utils/message.h"
 LoginScreen* loginScreen;
 LoginScreen* LoginScreen_new(){
     LoginScreen* output=(LoginScreen*)malloc(sizeof(LoginScreen));
@@ -91,23 +92,17 @@ void loginscreen_showPassword_toggle(GtkWidget* widget,gpointer userData){
 }
 void loginscreen_init(){
     loginScreen=LoginScreen_new();
-    loginScreen->homeserverContainer=gtk_flow_box_new();
-    loginScreen->labelHomeserver=gtk_label_new("Homeserver (IP/Port): ");
-    loginScreen->entryHomeserver=gtk_entry_new();
-    loginScreen->buttonSelectHomeserver=gtk_button_new_with_label("Select");
-    loginScreen->entryPort=gtk_entry_new();
-    loginScreen->userDataContainer=gtk_list_box_new();
-    loginScreen->entryUsernameContainer=gtk_flow_box_new();
-    loginScreen->entryUsername=gtk_entry_new();
-    loginScreen->labelUsername=gtk_label_new("Username: ");
-    loginScreen->entryPasswordContainer=gtk_flow_box_new();
-    loginScreen->entryPassword=gtk_entry_new();
-    loginScreen->labelPassword=gtk_label_new("Password: ");
-    loginScreen->checkboxShowPassword=gtk_check_button_new_with_label("Show password");
-    loginScreen->loginRegisterContainer=gtk_flow_box_new();
-    loginScreen->buttonLogin=gtk_button_new_with_label("Login");
-    loginScreen->buttonRegister=gtk_button_new_with_label("Register");
-
+    GtkBuilder* builder=gtk_builder_new();
+    if(!gtk_builder_add_from_file(GTK_BUILDER(builder),"ui/matrixim_login_screen.ui",0)){
+        showErrorDialog("Failed to load UI file matrixim_login_screen.ui");
+        exit(0);
+    }
+    gtk_builder_connect_signals(builder,0);
+    loginScreen->containerContent=GTK_WIDGET(gtk_builder_get_object(builder,"containerContent"));
+    loginScreen->entryHomeserver=GTK_WIDGET(gtk_builder_get_object(builder,"entryHomeserverIP"));
+    loginScreen->entryPort=GTK_WIDGET(gtk_builder_get_object(builder,"entryHomeserverPort"));
+    loginScreen->entryUsername=GTK_WIDGET(gtk_builder_get_object(builder,"entryLogin"));
+    loginScreen->entryPassword=GTK_WIDGET(gtk_builder_get_object(builder,"entryPassword"));
     if(app->settings->wasLoggedIn && app->settings->lastUsername && app->settings->lastPassword && app->settings->lastHomeserver){
         LoginResult loginResult=loginscreen_login(app->settings->lastHomeserver,app->settings->lastPort,app->settings->lastUsername,app->settings->lastPassword);
         loginscreen_checkLoginResult(loginResult);
@@ -127,38 +122,17 @@ void loginscreen_init(){
         if(app->settings->lastUsername)
             gtk_entry_set_text(GTK_ENTRY(loginScreen->entryUsername),app->settings->lastUsername);
     }
-
-    gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(loginScreen->homeserverContainer),4);
-    gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(loginScreen->entryUsernameContainer),2);
-    gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(loginScreen->entryPasswordContainer),3);
-    gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(loginScreen->loginRegisterContainer),3);
+    
     gtk_entry_set_visibility(GTK_ENTRY(loginScreen->entryPassword),false);
     gtk_entry_set_text(GTK_ENTRY(loginScreen->entryPort),"8008");
 
-    g_signal_connect(loginScreen->buttonLogin,"clicked",G_CALLBACK(loginscreen_buttonLogin_clicked),0);
-    g_signal_connect(loginScreen->buttonRegister,"clicked",G_CALLBACK(loginscreen_buttonRegister_clicked),0);
-    g_signal_connect(loginScreen->checkboxShowPassword,"toggled",loginscreen_showPassword_toggle,0);
-
-    gtk_fixed_put(GTK_FIXED(app->fixedContainer),loginScreen->homeserverContainer,2,2);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->homeserverContainer),loginScreen->labelHomeserver,-1);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->homeserverContainer),loginScreen->entryHomeserver,-1);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->homeserverContainer),loginScreen->entryPort,-1);
-    //gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->homeserverContainer),loginScreen->buttonSelectHomeserver,-1);
-    gtk_fixed_put(GTK_FIXED(app->fixedContainer),loginScreen->userDataContainer,2,50);
-    gtk_list_box_insert(GTK_LIST_BOX(loginScreen->userDataContainer),loginScreen->entryUsernameContainer,-1);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->entryUsernameContainer),loginScreen->labelUsername,-1);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->entryUsernameContainer),loginScreen->entryUsername,-1);
-    gtk_list_box_insert(GTK_LIST_BOX(loginScreen->userDataContainer),loginScreen->entryPasswordContainer,-1);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->entryPasswordContainer),loginScreen->labelPassword,-1);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->entryPasswordContainer),loginScreen->entryPassword,-1);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->entryPasswordContainer),loginScreen->checkboxShowPassword,-1);
-    gtk_list_box_insert(GTK_LIST_BOX(loginScreen->userDataContainer),loginScreen->loginRegisterContainer,-1);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->loginRegisterContainer),loginScreen->buttonLogin,-1);
-    gtk_flow_box_insert(GTK_FLOW_BOX(loginScreen->loginRegisterContainer),loginScreen->buttonRegister,-1);
+    gtk_container_add(GTK_CONTAINER(app->window),loginScreen->containerContent);
+    g_object_unref(builder);
+    
     gtk_widget_show_all(app->window);
 }
 void loginscreen_finish(){
-    gtk_container_foreach(GTK_CONTAINER(app->fixedContainer),(GtkCallback)gtk_widget_destroy,0);
+    gtk_container_foreach(GTK_CONTAINER(app->window),(GtkCallback)gtk_widget_destroy,0);
     free(loginScreen);
 }
 void loginscreen_checkLoginResult(LoginResult loginResult){

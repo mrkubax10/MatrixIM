@@ -3,7 +3,7 @@
 #include <gtk/gtk.h>
 #include <stdbool.h>
 typedef struct LoginScreen{
-    GtkWidget* homeserverContainer;
+    GtkWidget* containerContent;
     GtkWidget* labelHomeserver;
     GtkWidget* entryHomeserver;
     GtkWidget* buttonSelectHomeserver;

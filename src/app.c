@@ -115,6 +115,6 @@ void application_activate(GtkApplication* gtkApplication,gpointer userdata){
     app->fixedContainer=gtk_fixed_new();
     gtk_window_set_title(GTK_WINDOW(app->window),"MatrixIM");
     gtk_window_set_default_size(GTK_WINDOW(app->window),400,350);
-    gtk_container_add(GTK_CONTAINER(app->window),app->fixedContainer);
+    //gtk_container_add(GTK_CONTAINER(app->window),app->fixedContainer);
     loginscreen_init();
 }

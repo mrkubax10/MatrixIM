@@ -4,6 +4,7 @@
 #include "http/http.h"
 #include "app.h"
 #include "screens/main_screen.h"
+#include "utils/message.h"
 MatrixRoom* MatrixRoom_new(){
     MatrixRoom* output=(MatrixRoom*)malloc(sizeof(MatrixRoom));
     return output;
@@ -98,5 +99,29 @@ bool matrix_leaveRoom(char* roomID){
         HTTPResponseInfo_destroy(response);
         return false;
     }
+    return true;
+}
+bool matrix_sendMessage(char* msg,char* roomID){
+    char* tnxID=matrix_generateTnxID();
+    int pathLength=snprintf(0,0,"/_matrix/client/r0/rooms/%s/send/m.room.message/%s",roomID,tnxID);
+    char* path=malloc(pathLength+1);
+    snprintf(path,pathLength+1,"/_matrix/client/r0/rooms/%s/send/m.room.message/%s",roomID,tnxID);
+    cJSON* root=cJSON_CreateObject();
+    cJSON_AddStringToObject(root,"msg_type","m.text"); // At the moment we only support text messages
+    cJSON_AddStringToObject(root,"body",msg);
+    char* data=cJSON_Print(root);
+    http_sendPUTRequest(path,app->loginInfo->homeserverName,"application/json",strlen(data),data,app->loginInfo->accessToken,app->homeserverSocket);
+    cJSON_free((void*)root);
+    free(path);
+    free(tnxID);
+    char responseData[4096];
+    Socket_read(app->homeserverSocket,responseData,4096);
+    HTTPResponseInfo* response=http_parseResponse(responseData);
+    if(response->code!=HTTP_CODE_OK){
+        printf("%s\n",response->data);
+        HTTPResponseInfo_destroy(response);
+        return false;
+    }
+    HTTPResponseInfo_destroy(response);
     return true;
 }
