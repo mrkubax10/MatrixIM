@@ -25,7 +25,6 @@ char* matrix_joinRoom(char* room){
         cJSON* jsonData=cJSON_Parse(response->data);
         char* errorMsg=(char*)malloc(strlen("Failed to enter room")+1);
         strcpy(errorMsg,"Failed to enter room");
-        printf("%s\n",response->data);
         if(jsonData){
             cJSON* error=cJSON_GetObjectItemCaseSensitive(jsonData,"error");
             if(error){
