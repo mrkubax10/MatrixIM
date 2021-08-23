@@ -18,4 +18,4 @@ cmake ..
 make
 ```
 ### MacOS X
-MatrixIM should work on MacOS X but it is untested. Feedback is welcome.
+MacOS X is unsupported.
