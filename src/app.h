@@ -24,6 +24,7 @@ typedef struct Application{
     char* configDir;
     ApplicationSettings* settings;
 } Application;
+Application* Application_new();
 extern Application* app;
 void application_activate(GtkApplication* gtkApplication,gpointer userData);
 #endif

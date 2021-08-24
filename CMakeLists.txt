@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(MatrixIM C)
+set(CMAKE_BUILD_TYPE Debug)
 add_executable(MatrixIM
 	src/main.c
 	src/app.c
@@ -8,6 +9,7 @@ add_executable(MatrixIM
 	src/matrix/login.c
 	src/matrix/register.c
 	src/matrix/room.c
+	src/matrix/homeserver.c
 	src/network/socket.c
 	src/network/socket_unix.c
 	src/screens/login_screen.c

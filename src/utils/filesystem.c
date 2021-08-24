@@ -55,3 +55,16 @@ void createFolder(char* path){
     exit(1);
 }
 #endif
+char* loadFullFile(char* path){
+    FILE* file=fopen(path,"r");
+    if(!file)
+        return 0;
+    fseek(file,0,SEEK_END);
+    int fileLength=ftell(file);
+    rewind(file);
+    char* fileData=malloc(fileLength+1);
+    fread(fileData,1,fileLength,file);
+    fclose(file);
+    fileData[fileLength]=0;
+    return fileData;
+}

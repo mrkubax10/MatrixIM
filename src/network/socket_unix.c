@@ -77,7 +77,18 @@ char* Socket_readAll(Socket* sock,int* count){
     *count=total;
     return output;
 }
+bool Socket_isConnected(Socket* sock){
+    return sock->connected;
+}
+void Socket_disconnect(Socket* sock){
+    sock->connected=false;
+    close(sock->sockfd);
+}
 void Socket_close(Socket* sock){
+    if(!sock->connected){
+        free(sock);
+        return;
+    }
     sock->connected=false;
     close(sock->sockfd);
     free(sock);

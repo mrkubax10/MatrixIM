@@ -2,9 +2,11 @@
 #include "screens/login_screen.h"
 #include <cjson/cJSON.h>
 #include "utils.h"
+#include "utils/filesystem.h"
+#include <stdlib.h>
 Application* app;
 ApplicationSettings* ApplicationSettings_new(){
-    ApplicationSettings* output=(ApplicationSettings*)malloc(sizeof(ApplicationSettings));
+    ApplicationSettings* output=malloc(sizeof(ApplicationSettings));
     output->wasLoggedIn=false;
     output->lastPort=8008;
     output->deviceID=0;
@@ -13,27 +15,21 @@ ApplicationSettings* ApplicationSettings_new(){
     return output;
 }
 void ApplicationSettings_load(ApplicationSettings* settings){
-    char* configDirCopy=(char*)malloc(strlen(app->configDir)+1);
+    char* configDirCopy=malloc(strlen(app->configDir)+strlen("/config.json")+1);
     strcpy(configDirCopy,app->configDir);
-    FILE* file=fopen(strcat(configDirCopy,"/config.json"),"r");
-    if(!file){
+    strcat(configDirCopy,"/config.json");
+    char* configData=loadFullFile(configDirCopy);
+    printf("(Log) [Config] Loading config from %s\n",configDirCopy);
+    if(!configData){
         printf("(Warn) [Config] Failed to load config, using defaults instead\n");
         free(configDirCopy);
         return;
     }
     free(configDirCopy);
-    fseek(file,0,SEEK_END);
-    int fileSize=ftell(file);
-    fseek(file,0,SEEK_SET);
-    char* data=(char*)malloc(fileSize+1);
-    int readDataCount=fread(data,1,fileSize,file);
-    if(readDataCount!=fileSize)
-        printf("(Warn) [Config] Failed to load full file, errorcode: %d\n",ferror(file));
-    const cJSON* jsonData=cJSON_Parse(data);
+    const cJSON* jsonData=cJSON_Parse(configData);
     if(!jsonData){
         printf("(Warn) [Config] Failed to parse settings\n");
-        fclose(file);
-        free(data);
+        free(configData);
         return;
     }
     const cJSON* lastPort=cJSON_GetObjectItemCaseSensitive(jsonData,"lastPort");
@@ -44,39 +40,40 @@ void ApplicationSettings_load(ApplicationSettings* settings){
     const cJSON* lastHomeserver=cJSON_GetObjectItemCaseSensitive(jsonData,"lastHomeserver");
     if(lastPort && cJSON_IsNumber(lastPort)){
         settings->lastPort=lastPort->valueint;
-        cJSON_free(lastPort);
+        cJSON_free((void*)lastPort);
     }
     if(lastUsername && cJSON_IsString(lastUsername)){
         settings->lastUsername=(char*)malloc(strlen(lastUsername->valuestring)+1);
         strcpy(settings->lastUsername,lastUsername->valuestring);
-        cJSON_free(lastUsername);
+        cJSON_free((void*)lastUsername);
     }
     if(lastPassword && cJSON_IsString(lastPassword)){
         settings->lastPassword=(char*)malloc(strlen(lastPassword->valuestring)+1);
         strcpy(settings->lastPassword,lastPassword->valuestring);
-        cJSON_free(lastPassword);
+        cJSON_free((void*)lastPassword);
     }
     if(wasLoggedIn && cJSON_IsBool(wasLoggedIn)){
         settings->wasLoggedIn=wasLoggedIn->valueint==1?true:false;
-        cJSON_free(wasLoggedIn);
+        cJSON_free((void*)wasLoggedIn);
     }
     if(deviceID && cJSON_IsString(deviceID)){
         settings->deviceID=(char*)malloc(strlen(deviceID->valuestring)+1);
         strcpy(settings->deviceID,deviceID->valuestring);
-        cJSON_free(deviceID);
+        cJSON_free((void*)deviceID);
     }
     if(lastHomeserver && cJSON_IsString(lastHomeserver)){
         settings->lastHomeserver=(char*)malloc(strlen(lastHomeserver->valuestring)+1);
         strcpy(settings->lastHomeserver,lastHomeserver->valuestring);
-        cJSON_free(lastHomeserver);
+        cJSON_free((void*)lastHomeserver);
     }
-    cJSON_free(jsonData);
-    fclose(file);
+    cJSON_free((void*)jsonData);
+    free(configData);
 }
 void ApplicationSettings_save(ApplicationSettings* settings){
-    char* configDirCopy=(char*)malloc(strlen(app->configDir)+1);
+    char* configDirCopy=malloc(strlen(app->configDir)+strlen("/config.json")+1);
     strcpy(configDirCopy,app->configDir);
-    printf("(Log) [Config] Saving config to %s\n",strcat(configDirCopy,"/config.json"));
+    strcat(configDirCopy,"/config.json");
+    printf("(Log) [Config] Saving config to %s\n",configDirCopy);
     if(!folderExists(app->configDir))
         createFolder(app->configDir);
     FILE* file=fopen(configDirCopy,"w");
@@ -109,12 +106,19 @@ void ApplicationSettings_save(ApplicationSettings* settings){
     cJSON_free(root);
     fclose(file);
 }
+Application* Application_new(){
+    Application* output=malloc(sizeof(Application));
+    output->loginInfo=LoginInfo_new();
+    output->loggedIn=false;
+    output->configDir=getConfigDir();
+    output->settings=ApplicationSettings_new();
+    return output;
+}
 void application_activate(GtkApplication* gtkApplication,gpointer userdata){
     app->window=gtk_application_window_new(gtkApplication);
     app->homeserverSocket=Socket_new();
     app->fixedContainer=gtk_fixed_new();
     gtk_window_set_title(GTK_WINDOW(app->window),"MatrixIM");
     gtk_window_set_default_size(GTK_WINDOW(app->window),400,350);
-    //gtk_container_add(GTK_CONTAINER(app->window),app->fixedContainer);
     loginscreen_init();
 }
