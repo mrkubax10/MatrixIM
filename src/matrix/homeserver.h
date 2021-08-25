@@ -9,7 +9,7 @@ typedef struct HomeserverInfo{
     bool supportsLoginEmailIdentity;
     bool supportsLoginMsisdn;
     bool supportsLoginToken;
-    bool supportsLoginDummy
+    bool supportsLoginDummy;
 } HomeserverInfo;
 HomeserverInfo* HomeserverInfo_new();
 void HomeserverInfo_destroy(HomeserverInfo* homeserver);

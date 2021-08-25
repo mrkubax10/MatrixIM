@@ -98,7 +98,7 @@ void mainscreen_menuMatrixLeaveRoom_activated(GtkWidget* widget,gpointer userDat
             return;
         GtkTreeIter iter;
         gtk_tree_model_get_iter(listRoomsModel,&iter,treePath);
-        gtk_tree_store_remove(mainScreen->listRoomsStore,&iter);
+        gtk_list_store_remove(mainScreen->listRoomsStore,&iter);
         Vector_delete(mainScreen->enteredRooms,selectionID);
     }
 }
@@ -108,7 +108,7 @@ void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userdata){
         "version","git",
         "copyright","2021 (C) mrkubax10",
         "logo-icon-name","gtk-about",
-        0);
+        NULL);
 }
 void mainscreen_synchronizeEnteredRooms(){
     http_sendGETRequest("/_matrix/client/r0/joined_rooms",app->loginInfo->homeserverName,app->homeserverSocket,app->loginInfo->accessToken);
@@ -117,8 +117,6 @@ void mainscreen_synchronizeEnteredRooms(){
     HTTPResponseInfo* response=http_parseResponse(responseData);
     if(response->code!=HTTP_CODE_OK){
         showErrorDialog("Failed to synchronize entered rooms");
-        mainscreen_finish();
-        loginscreen_init();
         return;
     }
     cJSON* jsonData=cJSON_Parse(response->data);
@@ -221,10 +219,10 @@ void mainscreen_init(){
     mainScreen->messageEntry=GTK_WIDGET(gtk_builder_get_object(builder,"entryMessage"));
     mainScreen->listRoomsStore=GTK_LIST_STORE(gtk_builder_get_object(builder,"listRoomsStore"));
     GtkCellRenderer* cellRenderer=gtk_cell_renderer_text_new();
-    GtkTreeViewColumn* treeViewColumnRooms=gtk_tree_view_column_new_with_attributes("Rooms",cellRenderer,"text",0,0);
+    GtkTreeViewColumn* treeViewColumnRooms=gtk_tree_view_column_new_with_attributes("Rooms",cellRenderer,"text",0,NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(mainScreen->listRooms),treeViewColumnRooms);
     mainScreen->listFriendsStore=GTK_LIST_STORE(gtk_builder_get_object(builder,"listFriendsStore"));
-    GtkTreeViewColumn* treeViewColumnFriends=gtk_tree_view_column_new_with_attributes("Friends",cellRenderer,"text",0,0);
+    GtkTreeViewColumn* treeViewColumnFriends=gtk_tree_view_column_new_with_attributes("Friends",cellRenderer,"text",0,NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(mainScreen->listFriends),treeViewColumnFriends);
     mainscreen_synchronizeEnteredRooms();
     gtk_widget_show_all(app->window);

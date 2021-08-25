@@ -37,12 +37,28 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
         HTTPResponseInfo_destroy(responseInfo);
         return false;
     }
+    printf("%s\n",responseInfo->data);
     cJSON* jsonData=cJSON_Parse(responseInfo->data);
+    if(!jsonData){
+        HTTPResponseInfo_destroy(responseInfo);
+        showErrorDialog("Failed to parse response: 0");
+        return false;
+    }
+    cJSON* errcode=cJSON_GetObjectItemCaseSensitive(jsonData,"errcode");
+    if(cJSON_IsString(errcode)){
+        if(strcmp(errcode->valuestring,"M_USER_IN_USE")==0)
+            showErrorDialog("Username already taken");
+        else
+            showErrorDialog("Unknown error");
+        cJSON_free((void*)errcode);
+        cJSON_free((void*)jsonData);
+        return false;
+    }
     cJSON* available=cJSON_GetObjectItemCaseSensitive(jsonData,"available");
-    if(!available || !cJSON_IsBool(available)){
+    if(!cJSON_IsBool(available)){
         cJSON_free((void*)jsonData);
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response");
+        showErrorDialog("Failed to parse response: available attribute is not bool");
         return false;
     }
     if(!available->valueint){
@@ -71,12 +87,12 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
     jsonData=cJSON_Parse(responseInfo->data);
     if(!jsonData){
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response");
+        showErrorDialog("Failed to parse response: 1");
         return false;
     }
     if(responseInfo->code!=HTTP_CODE_UNAUTHORIZED){
         cJSON* errcode=cJSON_GetObjectItemCaseSensitive(jsonData,"errcode");
-        if(!errcode){
+        if(!cJSON_IsString(errcode)){
             cJSON_free((void*)jsonData);
             HTTPResponseInfo_destroy(responseInfo);
             showErrorDialog("Unknown error");
@@ -103,10 +119,10 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
         return false;
     }
     cJSON* session=cJSON_GetObjectItemCaseSensitive(jsonData,"session");
-    if(!session){
+    if(!cJSON_IsString(session)){
         cJSON_free((void*)jsonData);
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response");
+        showErrorDialog("Failed to parse response: session attribute is not string");
         return false;
     }
     if(app->settings->deviceID!=0)
@@ -124,22 +140,22 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
         showErrorDialog("Server responded with HTTP code different than 200");
         return false;
     }
-    jsonData=cJSON_Parse(responseData);
+    jsonData=cJSON_Parse(responseInfo->data);
     if(!jsonData){
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response");
+        showErrorDialog("Failed to parse response: 2");
         return false;
     }
     cJSON* jsonAccessToken=cJSON_GetObjectItemCaseSensitive(jsonData,"access_token");
     cJSON* jsonUserID=cJSON_GetObjectItemCaseSensitive(jsonData,"user_id");
     cJSON* jsonDeviceID=cJSON_GetObjectItemCaseSensitive(jsonData,"device_id");
-    if(!jsonUserID || !jsonAccessToken || !jsonDeviceID){
+    if(!cJSON_IsString(jsonUserID) || !cJSON_IsString(jsonAccessToken) || !cJSON_IsString(jsonDeviceID)){
         cJSON_free((void*)jsonUserID);
         cJSON_free((void*)jsonAccessToken);
         cJSON_free((void*)jsonDeviceID);
         cJSON_free((void*)jsonData);
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response");
+        showErrorDialog("Failed to parse response: 3");
         return false;
     }
     int userIDDataLength=0;

@@ -21,7 +21,6 @@ void loginscreen_buttonLogin_clicked(GtkWidget* widget,gpointer userData){
         showInfoDialog("Select homeserver first");
         return;
     }
-
     char* username=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryUsername));
     char* password=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryPassword));
     if(strcmp(username,"")==0){
@@ -39,6 +38,10 @@ void loginscreen_buttonLogin_clicked(GtkWidget* widget,gpointer userData){
     }
 }
 void loginscreen_buttonRegister_clicked(GtkWidget* widget,gpointer userData){
+    if(!loginScreen->lastSelectedHomeserver){
+        showInfoDialog("Select homeserver first");
+        return;
+    }
     char* username=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryUsername));
     char* password=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryPassword));
     if(strcmp(username,"")==0){
@@ -84,6 +87,8 @@ void loginscreen_init(){
     loginScreen->entryPort=GTK_WIDGET(gtk_builder_get_object(builder,"entryHomeserverPort"));
     loginScreen->entryUsername=GTK_WIDGET(gtk_builder_get_object(builder,"entryLogin"));
     loginScreen->entryPassword=GTK_WIDGET(gtk_builder_get_object(builder,"entryPassword"));
+    loginScreen->buttonLogin=GTK_WIDGET(gtk_builder_get_object(builder,"buttonLogin"));
+    loginScreen->buttonRegister=GTK_WIDGET(gtk_builder_get_object(builder,"buttonRegister"));
     if(app->settings->wasLoggedIn && app->settings->lastUsername && app->settings->lastPassword && app->settings->lastHomeserver){
         if(loginscreen_selectHomeserver(app->settings->lastHomeserver,app->settings->lastPort)){
             if(matrix_loginPassword(app->settings->lastHomeserver,app->settings->lastUsername,app->settings->lastPassword,"MatrixIM",app->settings->deviceID)){
@@ -118,7 +123,7 @@ void loginscreen_finish(){
 }
 bool loginscreen_selectHomeserver(char* ip,int port){
     if(Socket_isConnected(app->homeserverSocket)){
-        if(strcmp(ip,app->settings->lastHomeserver)==0 && atoi(port)==app->settings->lastPort)
+        if(strcmp(ip,app->settings->lastHomeserver)==0 && port==app->settings->lastPort)
             return true;
         Socket_disconnect(app->homeserverSocket);
     }
@@ -128,7 +133,7 @@ bool loginscreen_selectHomeserver(char* ip,int port){
     }
     HomeserverInfo* homeserver=matrix_getHomeserverInfo(ip,port);
     if(!homeserver)
-        return;
+        return false;
     if(!homeserver->supportsLoginPassword){
         gtk_widget_set_sensitive(loginScreen->entryUsername,false);
         gtk_widget_set_sensitive(loginScreen->entryPassword,false);
@@ -140,6 +145,6 @@ bool loginscreen_selectHomeserver(char* ip,int port){
     loginScreen->lastSelectedHomeserver=malloc(strlen(ip)+1);
     strcpy(loginScreen->lastSelectedHomeserver,ip);
     app->settings->lastHomeserver=loginScreen->lastSelectedHomeserver;
-    app->settings->lastPort=atoi(port);
+    app->settings->lastPort=port;
     return true;
 }

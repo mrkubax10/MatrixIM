@@ -39,16 +39,16 @@ HomeserverInfo* matrix_getHomeserverInfo(char* ip,int port){
     }
     HTTPResponseInfo_destroy(response);
     cJSON* flows=cJSON_GetObjectItemCaseSensitive(jsonData,"flows");
-    if(!flows || !cJSON_IsArray(flows)){
-        showErrorDialog("Failed to parse response");
+    if(!cJSON_IsArray(flows)){
+        showErrorDialog("Failed to parse response: flows is not array");
         return 0;
     }
     HomeserverInfo* homeserver=HomeserverInfo_new();
-    cJSON* flowsItem;
-    for(int i=0; (flowsItem=cJSON_GetArrayItem(flows,i)); i++){
+    cJSON* flowsItem=cJSON_GetArrayItem(flows,0);
+    while(cJSON_IsObject(flowsItem)){
         cJSON* flowsItemType=cJSON_GetObjectItemCaseSensitive(flowsItem,"type");
         if(!flowsItemType || !cJSON_IsString(flowsItemType)){
-            showErrorDialog("Failed to parse response");
+            showErrorDialog("Failed to parse response: type attribute of Flow object is not string");
             HomeserverInfo_destroy(homeserver);
             return 0;
         }
@@ -77,7 +77,7 @@ HomeserverInfo* matrix_getHomeserverInfo(char* ip,int port){
             homeserver->supportsLoginDummy=true;
         }
         cJSON_free((void*)flowsItemType);
-        cJSON_free((void*)flowsItem);
+        flowsItem=flowsItem->next;
     }
     cJSON_free((void*)jsonData);
     return homeserver;
