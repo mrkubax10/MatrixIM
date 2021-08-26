@@ -2,6 +2,7 @@
 #define SRC_UTILS_H
 #include <stdbool.h>
 char** split(char* str,char ch,int* len);
+char** splitByString(char* str,char* str2,int* len);
 void array_free(void** data,int len);
 char* intToString(int num);
 #endif

@@ -146,5 +146,6 @@ bool loginscreen_selectHomeserver(char* ip,int port){
     strcpy(loginScreen->lastSelectedHomeserver,ip);
     app->settings->lastHomeserver=loginScreen->lastSelectedHomeserver;
     app->settings->lastPort=port;
+    HomeserverInfo_destroy(homeserver);
     return true;
 }

@@ -78,7 +78,7 @@ HTTPResponseInfo* http_parseResponse(char* response){
     HTTPResponseInfo* output=HTTPResponseInfo_new();
     int linesCount=0;
     int headerDataCount=0;
-    char** lines=split(response,'\n',&linesCount);
+    char** lines=splitByString(response,"\r\n",&linesCount);
     char** header=split(lines[0],' ',&headerDataCount);
     if(strcmp(header[0],HTTP_VERSION)!=0)
         printf("(Warn) [HTTP] Received response with different HTTP version than 1.1\n");
@@ -92,7 +92,7 @@ HTTPResponseInfo* http_parseResponse(char* response){
         char* value=http_getValueFromIndex(lines,contentTypeIndex);
         output->datatype=(char*)malloc(strlen(value));
         memcpy(output->datatype,value,strlen(value));
-        output->datatype[strlen(value)-1]=0;
+        output->datatype[strlen(value)]=0;
         free(value);
     }
     else{

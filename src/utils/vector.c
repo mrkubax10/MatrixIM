@@ -4,6 +4,7 @@ Vector* Vector_new(){
     Vector* output=malloc(sizeof(Vector));
     output->capacity=0;
     output->data=0;
+    return output;
 }
 void Vector_push(Vector* vector,void* obj){
     vector->capacity++;

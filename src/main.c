@@ -5,6 +5,7 @@
 #include "network/socket.h"
 #include "http/http.h"
 #include "utils/filesystem.h"
+#include "utils.h"
 int main(int argc,char** args){
     gtk_init(&argc,&args);
     srand(time(0));

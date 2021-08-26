@@ -4,43 +4,85 @@
 #include <stdio.h>
 #include <stdbool.h>
 char** split(char* str,char ch,int* len){
-    char** output=(char**)malloc(0);
-    char* tempString=(char*)malloc(0);
-    int elements=0,index=0;
+    char** output=0;
+    int elements=0,tempLength=0;
     bool hasData=false;
+    char* temp=0;
     for(int i=0; i<strlen(str); i++){
         if(str[i]==ch){
             if(!hasData)
                 continue;
             elements++;
-            output=(char**)realloc(output,elements*sizeof(char*));
-            output[elements-1]=(char*)malloc(index+2);
-            tempString=(char*)realloc(tempString,index+2);
-            tempString[index+1]=0;
-            strcpy(output[elements-1],tempString);
-            free(tempString);
-            tempString=(char*)malloc(0);
+            output=realloc(output,elements*sizeof(char*));
+            output[elements-1]=malloc(tempLength+1);
+            memcpy(output[elements-1],temp,tempLength);
+            output[elements-1][tempLength]=0;
+            free(temp);
+            tempLength=0;
+            temp=0;
             hasData=false;
-            index=0;
         }
         else{
+            tempLength++;
+            temp=realloc(temp,tempLength*sizeof(char));
+            temp[tempLength-1]=str[i];
             hasData=true;
-            tempString=(char*)realloc(tempString,index+1);
-            tempString[index]=str[i];
-            index++;
         }
     }
-    if(hasData){
-       output=(char**)realloc(output,(elements+1)*sizeof(char*));
-       output[elements]=(char*)malloc(index+2);
-       tempString=(char*)realloc(tempString,index+2);
-       tempString[index+1]=0;
-       strcpy(output[elements],tempString);
-       free(tempString);
-       elements++;
+    if(tempLength>0){
+        elements++;
+        output=realloc(output,elements*sizeof(char*));
+        output[elements-1]=malloc(strlen(temp)+1);
+        memcpy(output[elements-1],temp,tempLength);
+        output[elements-1][tempLength]=0;
+        free(temp);
     }
-    if(len)
-        *len=elements;
+    *len=elements;
+    return output;
+}
+char** splitByString(char* str,char* str2,int* len){
+    char** output=0;
+    if(strlen(str2)>=strlen(str)){
+        *len=1;
+        output=realloc(output,1*sizeof(char*));
+        output[0]=malloc(strlen(str)+1);
+        strcpy(output[0],str);
+        return output;
+    }
+    int elements=0,tempLength=0;
+    bool hasData=false;
+    char* temp=0;
+    for(int i=0; i<strlen(str); i++){
+        if(strlen(str2)+i-1<strlen(str) && memcmp((void*)(str+i),(void*)str2,strlen(str2))==0){
+            if(!hasData)
+                continue;
+            elements++;
+            output=realloc(output,elements*sizeof(char*));
+            output[elements-1]=malloc(tempLength+1);
+            memcpy(output[elements-1],temp,tempLength);
+            output[elements-1][tempLength]=0;
+            free(temp);
+            temp=0;
+            tempLength=0;
+            hasData=false;
+            i+=strlen(str2)-1;
+        }
+        else{
+            tempLength++;
+            temp=realloc(temp,tempLength*sizeof(char));
+            temp[tempLength-1]=str[i];
+            hasData=true;
+        }
+    }
+    if(tempLength>0){
+        elements++;
+        output=realloc(output,elements*sizeof(char*));
+        output[elements-1]=malloc(tempLength+1);
+        memcpy(output[elements-1],temp,tempLength);
+        output[elements-1][tempLength]=0;
+        free(temp);
+    }
+    *len=elements;
     return output;
 }
 void array_free(void** data,int len){
