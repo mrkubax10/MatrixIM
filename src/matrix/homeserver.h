@@ -14,4 +14,5 @@ typedef struct HomeserverInfo{
 HomeserverInfo* HomeserverInfo_new();
 void HomeserverInfo_destroy(HomeserverInfo* homeserver);
 HomeserverInfo* matrix_getHomeserverInfo(char* ip,int port);
+
 #endif

@@ -90,7 +90,7 @@ HTTPResponseInfo* http_parseResponse(char* response){
     int contentTypeIndex=http_findEntry(lines,"Content-Type");
     if(contentTypeIndex!=-1){
         char* value=http_getValueFromIndex(lines,contentTypeIndex);
-        output->datatype=(char*)malloc(strlen(value));
+        output->datatype=(char*)malloc(strlen(value)+1);
         memcpy(output->datatype,value,strlen(value));
         output->datatype[strlen(value)]=0;
         free(value);
@@ -159,6 +159,12 @@ void http_sendPUTRequest(char* path,char* host,char* datatype,int datalength,cha
     }
     Socket_send(sock,request,length);
     free(request);
+}
+HTTPResponseInfo* http_readResponse(Socket* sock){
+    char data[4096];
+    Socket_read(sock,data,4096);
+    HTTPResponseInfo* response=http_parseResponse(data);
+    return response;
 }
 char* http_toHTTPURL(char* url){
     int length=0;

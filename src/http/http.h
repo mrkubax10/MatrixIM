@@ -22,5 +22,6 @@ HTTPResponseInfo* http_parseResponse(char* response);
 void http_sendGETRequest(char* path,char* host,Socket* sock,char* accessToken);
 void http_sendPOSTRequest(char* path,char* host,char* datatype,int datalength,char* data,char* accessToken,Socket* sock);
 void http_sendPUTRequest(char* path,char* host,char* datatype,int dataLength,char* data,char* accessToken,Socket* sock);
+HTTPResponseInfo* http_readResponse(Socket* sock);
 char* http_toHTTPURL(char* url);
 #endif

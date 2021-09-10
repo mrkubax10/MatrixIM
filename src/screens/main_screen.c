@@ -6,6 +6,7 @@
 #include "app.h"
 #include "http/http.h"
 #include "screens/login_screen.h"
+#include "screens/new_room_dialog.h"
 #include <cjson/cJSON.h>
 #include "utils/message.h"
 #include <pthread.h>
@@ -69,8 +70,8 @@ void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData
         if(!roomID)
             return;
         GtkTreeIter iter;
-        gtk_tree_store_append(GTK_TREE_STORE(mainScreen->listRoomsStore),&iter,0);
-        gtk_tree_store_set(GTK_TREE_STORE(mainScreen->listRoomsStore),&iter,0,room,-1);
+        gtk_list_store_append(GTK_LIST_STORE(mainScreen->listRoomsStore),&iter);
+        gtk_list_store_set(GTK_LIST_STORE(mainScreen->listRoomsStore),&iter,0,room,-1);
         MatrixRoom* matrixRoom=MatrixRoom_new();
         matrixRoom->roomAlias=room;
         matrixRoom->roomID=malloc(strlen(roomID)+1);
@@ -102,7 +103,10 @@ void mainscreen_menuMatrixLeaveRoom_activated(GtkWidget* widget,gpointer userDat
         Vector_delete(mainScreen->enteredRooms,selectionID);
     }
 }
-void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userdata){
+void mainscreen_menuMatrixCreateRoom_activated(GtkWidget* widget,gpointer userData){
+    newroomdialog_init();
+}
+void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userData){
     gtk_show_about_dialog(GTK_WINDOW(app->window),
         "name","MatrixIM - free and open-source Matrix client",
         "version","git",
@@ -175,12 +179,12 @@ void mainscreen_synchronizeEnteredRooms(){
     HTTPResponseInfo_destroy(response);
 }
 void mainscreen_eventListener(void* data){
-    //char message[4096];
-    //while(mainScreen){
-    //    printf("Waiting for message\n");
-    //    Socket_read(app->homeserverSocket,message,4096);
-    //    printf("%s\n",message);
-    //}
+    char message[4096];
+    while(mainScreen){
+       printf("Waiting for message\n");
+       Socket_read(app->homeserverSocket,message,4096);
+       printf("%s\n",message);
+    }
 }
 bool mainscreen_logout(){
     http_sendPOSTRequest("/_matrix/client/r0/logout",app->loginInfo->homeserverName,"",0,"",app->loginInfo->accessToken,app->homeserverSocket);

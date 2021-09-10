@@ -14,6 +14,7 @@ typedef struct MainScreen{
     GtkListStore* listRoomsStore;
     Vector* enteredRooms;
     pthread_t* matrixEventThread;
+    bool connectionLocked;
 } MainScreen;
 MainScreen* MainScreen_new();
 extern MainScreen* mainScreen;
@@ -22,6 +23,7 @@ void mainscreen_menuFileQuit_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_menuFileLogout_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_menuMatrixLeaveRoom_activated(GtkWidget* widget,gpointer userData);
+void mainscreen_menuMatrixCreateRoom_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_synchronizeEnteredRooms();
 void mainscreen_eventListener(void* data);

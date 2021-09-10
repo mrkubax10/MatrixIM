@@ -32,7 +32,7 @@ char** split(char* str,char ch,int* len){
     if(tempLength>0){
         elements++;
         output=realloc(output,elements*sizeof(char*));
-        output[elements-1]=malloc(strlen(temp)+1);
+        output[elements-1]=malloc(tempLength+1);
         memcpy(output[elements-1],temp,tempLength);
         output[elements-1][tempLength]=0;
         free(temp);

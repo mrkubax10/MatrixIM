@@ -21,6 +21,7 @@ void Socket_send(Socket* sock,char* data,int len);
 int Socket_read(Socket* sock,char* dest,int maxlen);
 char* Socket_readAll(Socket* sock,int* count);
 bool Socket_isConnected(Socket* sock);
+void Socket_setBlocking(Socket* sock,bool blocking);
 void Socket_disconnect(Socket* sock);
 void Socket_close(Socket* sock);
 #endif

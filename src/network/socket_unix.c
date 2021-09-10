@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <netinet/tcp.h>
+#include <fcntl.h>
 bool Socket_connect(Socket* sock,char* address,int port){
     if(sock->connected){
         printf("(Warn) [Socket] Socket already connected\n");
@@ -79,6 +80,13 @@ char* Socket_readAll(Socket* sock,int* count){
 }
 bool Socket_isConnected(Socket* sock){
     return sock->connected;
+}
+void Socket_setBlocking(Socket* sock,bool blocking){
+    int flags=fcntl(sock->sockfd,F_GETFL,0);
+    if(flags==-1)
+        return;
+    flags=blocking?(flags & ~O_NONBLOCK):(flags|O_NONBLOCK);
+    fcntl(sock->sockfd,F_SETFL,flags);
 }
 void Socket_disconnect(Socket* sock){
     sock->connected=false;
