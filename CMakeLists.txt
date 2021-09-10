@@ -14,6 +14,7 @@ add_executable(MatrixIM
 	src/network/socket_unix.c
 	src/screens/login_screen.c
 	src/screens/main_screen.c
+	src/screens/new_room_dialog.c
 	src/utils/message.c
 	src/utils/vector.c
 	src/utils/filesystem.c
