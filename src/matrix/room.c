@@ -136,6 +136,7 @@ char* matrix_createRoom(char* alias,char* name,char* topic,bool visible){
     cJSON_AddStringToObject(root,"room_alias_name",alias);
     cJSON_AddStringToObject(root,"name",name);
     cJSON_AddStringToObject(root,"topic",topic);
+    cJSON_AddBoolToObject(root,"visible",visible);
     cJSON* creationContent=cJSON_CreateObject();
     cJSON_AddBoolToObject(creationContent,"m.federate",false);
     cJSON_AddItemToObject(root,"creation_content",creationContent);
