@@ -83,7 +83,6 @@ void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData
 void mainscreen_menuMatrixLeaveRoom_activated(GtkWidget* widget,gpointer userData){
     int res=showYesNoDialog("Are you sure?");
     if(res==-8){
-        // FIXME: Find better way to do this
         GtkTreeSelection* selection=gtk_tree_view_get_selection(GTK_TREE_VIEW(mainScreen->listRooms));
         gtk_tree_selection_set_mode(selection,GTK_SELECTION_SINGLE);
         GtkTreeModel* listRoomsModel=GTK_TREE_MODEL(mainScreen->listRoomsStore);
@@ -94,7 +93,6 @@ void mainscreen_menuMatrixLeaveRoom_activated(GtkWidget* widget,gpointer userDat
         }
         GtkTreePath* treePath=selectedRows->data;
         int selectionID=atoi(gtk_tree_path_to_string(treePath));
-
         if(!matrix_leaveRoom(((MatrixRoom*)(mainScreen->enteredRooms->data[selectionID]))->roomID))
             return;
         GtkTreeIter iter;
@@ -113,6 +111,25 @@ void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userData){
         "copyright","2021 (C) mrkubax10",
         "logo-icon-name","gtk-about",
         NULL);
+}
+void mainscreen_listRooms_rowChanged(GtkWidget* widget,gpointer userData){
+    int selectionID=mainscreen_getSelectedRoom();
+    if(selectionID==-1 || selectionID>mainScreen->enteredRooms->capacity)
+        return;
+    MatrixRoom* room=mainScreen->enteredRooms->data[selectionID];
+    gtk_text_view_set_buffer(GTK_TEXT_VIEW(mainScreen->chat),room->chatBuffer);
+}
+int mainscreen_getSelectedRoom(){
+    // FIXME: Find better way to do this
+    GtkTreeSelection* selection=gtk_tree_view_get_selection(GTK_TREE_VIEW(mainScreen->listRooms));
+    gtk_tree_selection_set_mode(selection,GTK_SELECTION_SINGLE);
+    GtkTreeModel* listRoomsModel=GTK_TREE_MODEL(mainScreen->listRoomsStore);
+    GList* selectedRows=gtk_tree_selection_get_selected_rows(selection,&listRoomsModel);
+    if(!selectedRows)
+        return -1;
+    GtkTreePath* treePath=selectedRows->data;
+    int selectionID=atoi(gtk_tree_path_to_string(treePath));
+    return selectionID;
 }
 void mainscreen_synchronizeEnteredRooms(){
     http_sendGETRequest("/_matrix/client/r0/joined_rooms",app->loginInfo->homeserverName,app->homeserverSocket,app->loginInfo->accessToken);

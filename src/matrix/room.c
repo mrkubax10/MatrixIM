@@ -7,6 +7,7 @@
 #include "utils/message.h"
 MatrixRoom* MatrixRoom_new(){
     MatrixRoom* output=(MatrixRoom*)malloc(sizeof(MatrixRoom));
+    output->chatBuffer=gtk_text_buffer_new(0);
     return output;
 }
 void MatrixRoom_destroy(MatrixRoom* room){

@@ -1,9 +1,11 @@
 #ifndef SRC_MATRIX_ROOM_H
 #define SRC_MATRIX_ROOM_H
 #include <stdbool.h>
+#include <gtk/gtk.h>
 typedef struct MatrixRoom{
     char* roomID;
     char* roomAlias;
+    GtkTextBuffer* chatBuffer;
 } MatrixRoom;
 MatrixRoom* MatrixRoom_new();
 void MatrixRoom_destroy(MatrixRoom* room);
