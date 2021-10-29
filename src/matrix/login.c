@@ -6,6 +6,7 @@
 #include "app.h"
 #include "http/http.h"
 #include "utils/message.h"
+#include "utils/gettext_util.h"
 LoginInfo* LoginInfo_new(){
     LoginInfo* output=(LoginInfo*)malloc(sizeof(LoginInfo));
     return output;
@@ -45,9 +46,9 @@ bool matrix_loginPassword(char* ip,char* username,char* password,char* deviceNam
             const cJSON* jsonErrcode=cJSON_GetObjectItemCaseSensitive(jsonData,"errcode");
             if(jsonErrcode){
                 if(strcmp(jsonErrcode->valuestring,"M_UNRECOGNIZED")==0)
-                    showErrorDialog("Server did not recognize login type");
+                    showErrorDialog(_("Server did not recognize login type"));
                 else if(strcmp(jsonErrcode->valuestring,"M_FORBIDDEN")==0)
-                    showErrorDialog("Authentication data is incorrect");
+                    showErrorDialog(_("Authentication data is incorrect"));
                 HTTPResponseInfo_destroy(response);
                 cJSON_free((void*)jsonErrcode);
                 cJSON_free((void*)jsonData);
@@ -57,14 +58,14 @@ bool matrix_loginPassword(char* ip,char* username,char* password,char* deviceNam
                 HTTPResponseInfo_destroy(response);
                 cJSON_free((void*)jsonErrcode);
                 cJSON_free((void*)jsonData);
-                showErrorDialog("Unknown error");
+                showErrorDialog(_("Unknown error"));
                 return false;
             }
         }
         else{
             HTTPResponseInfo_destroy(response);
             cJSON_free((void*)jsonData);
-            showErrorDialog("Server responded with unexpected data type");
+            showErrorDialog(_("Server responded with unexpected data type"));
             return false;
         }
     }
@@ -77,7 +78,7 @@ bool matrix_loginPassword(char* ip,char* username,char* password,char* deviceNam
         cJSON_free((void*)jsonDeviceID);
         cJSON_free((void*)jsonData);
         HTTPResponseInfo_destroy(response);
-        showErrorDialog("Failed to parse response");
+        showErrorDialog(_("Failed to parse response"));
         return false;
     }
     app->loginInfo->userID=(char*)malloc(strlen(jsonUserID->valuestring)+1);
@@ -98,7 +99,7 @@ bool matrix_loginPassword(char* ip,char* username,char* password,char* deviceNam
         cJSON_free((void*)jsonDeviceID);
         cJSON_free((void*)jsonData);
         array_free((void**)userIDData,userIDDataLength);
-        showErrorDialog("Failed to get homeserver name");
+        showErrorDialog(_("Failed to get homeserver name"));
         return false;
     }
     app->loginInfo->homeserverName=(char*)malloc(strlen(userIDData[1])+1);

@@ -5,7 +5,7 @@
 #include "app.h"
 #include "http/http.h"
 #include "utils/message.h"
-
+#include "utils/gettext_util.h"
 HomeserverInfo* HomeserverInfo_new(){
     HomeserverInfo* output=malloc(sizeof(HomeserverInfo));
     output->supportsLoginPassword=false;
@@ -33,14 +33,14 @@ HomeserverInfo* matrix_getHomeserverInfo(char* ip,int port){
     }
     cJSON* jsonData=cJSON_Parse(response->data);
     if(!jsonData){
-        showErrorDialog("Failed to parse response");
+        showErrorDialog(_("Failed to parse response"));
         HTTPResponseInfo_destroy(response);
         return 0;
     }
     HTTPResponseInfo_destroy(response);
     cJSON* flows=cJSON_GetObjectItemCaseSensitive(jsonData,"flows");
     if(!cJSON_IsArray(flows)){
-        showErrorDialog("Failed to parse response: flows is not array");
+        showErrorDialog(_("Failed to parse response: flows is not array"));
         return 0;
     }
     HomeserverInfo* homeserver=HomeserverInfo_new();
@@ -48,7 +48,7 @@ HomeserverInfo* matrix_getHomeserverInfo(char* ip,int port){
     while(cJSON_IsObject(flowsItem)){
         cJSON* flowsItemType=cJSON_GetObjectItemCaseSensitive(flowsItem,"type");
         if(!flowsItemType || !cJSON_IsString(flowsItemType)){
-            showErrorDialog("Failed to parse response: type attribute of Flow object is not string");
+            showErrorDialog(_("Failed to parse response: type attribute of Flow object is not string"));
             HomeserverInfo_destroy(homeserver);
             return 0;
         }

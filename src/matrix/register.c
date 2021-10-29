@@ -4,6 +4,7 @@
 #include "app.h"
 #include "utils/message.h"
 #include "utils.h"
+#include "utils/gettext_util.h"
 char* matrix_createPasswordRegisterRequest(char* username,char* password,char* deviceName,char* deviceID,char* session){
     cJSON* root=cJSON_CreateObject();
     cJSON* auth=cJSON_CreateObject();
@@ -41,15 +42,15 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
     cJSON* jsonData=cJSON_Parse(responseInfo->data);
     if(!jsonData){
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response: 0");
+        showErrorDialog(_("Failed to parse response"));
         return false;
     }
     cJSON* errcode=cJSON_GetObjectItemCaseSensitive(jsonData,"errcode");
     if(cJSON_IsString(errcode)){
         if(strcmp(errcode->valuestring,"M_USER_IN_USE")==0)
-            showErrorDialog("Username already taken");
+            showErrorDialog(_("Username already taken"));
         else
-            showErrorDialog("Unknown error");
+            showErrorDialog(_("Unknown error"));
         cJSON_free((void*)errcode);
         cJSON_free((void*)jsonData);
         return false;
@@ -58,14 +59,14 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
     if(!cJSON_IsBool(available)){
         cJSON_free((void*)jsonData);
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response: available attribute is not bool");
+        showErrorDialog(_("Failed to parse response: available attribute is not bool"));
         return false;
     }
     if(!available->valueint){
         cJSON_free((void*)jsonData);
         cJSON_free((void*)available);
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Username is already taken or it is invalid");
+        showErrorDialog(_("Username is already taken or it is invalid"));
         return false;
     }
     cJSON_free((void*)available);
@@ -80,14 +81,14 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
     Socket_read(app->homeserverSocket,responseData,4096);
     responseInfo=http_parseResponse(responseData);
     if(strcmp(responseInfo->datatype,"application/json")!=0){
-        showErrorDialog("Server responded with unexpected data type");
+        showErrorDialog(_("Server responded with unexpected data type"));
         HTTPResponseInfo_destroy(responseInfo);
         return false;
     }
     jsonData=cJSON_Parse(responseInfo->data);
     if(!jsonData){
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response: 1");
+        showErrorDialog(_("Failed to parse response"));
         return false;
     }
     if(responseInfo->code!=HTTP_CODE_UNAUTHORIZED){
@@ -95,34 +96,34 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
         if(!cJSON_IsString(errcode)){
             cJSON_free((void*)jsonData);
             HTTPResponseInfo_destroy(responseInfo);
-            showErrorDialog("Unknown error");
+            showErrorDialog(_("Unknown error"));
             return false;
         }
         if(strcmp(errcode->valuestring,"M_WEAK_PASSWORD")==0){ // Password was too weak
             cJSON_free((void*)jsonData);
             cJSON_free((void*)errcode);
             HTTPResponseInfo_destroy(responseInfo);
-            showErrorDialog("Password is too weak");
+            showErrorDialog(_("Password is too weak"));
             return false;
         }
         else if(strcmp(errcode->valuestring,"M_UNKNOWN")==0){ // Server didn't recognize provided auth method
             cJSON_free((void*)jsonData);
             cJSON_free((void*)errcode);
             HTTPResponseInfo_destroy(responseInfo);
-            showErrorDialog("Invalid authentication method");
+            showErrorDialog(_("Invalid authentication method"));
             return false;
         }
         cJSON_free((void*)jsonData);
         cJSON_free((void*)errcode);
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Unknown error");
+        showErrorDialog(_("Unknown error"));
         return false;
     }
     cJSON* session=cJSON_GetObjectItemCaseSensitive(jsonData,"session");
     if(!cJSON_IsString(session)){
         cJSON_free((void*)jsonData);
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response: session attribute is not string");
+        showErrorDialog(_("Failed to parse response: session attribute is not string"));
         return false;
     }
     if(app->settings->deviceID!=0)
@@ -137,13 +138,13 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
     responseInfo=http_parseResponse(responseData);
     if(responseInfo->code!=HTTP_CODE_OK){
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Server responded with HTTP code different than 200");
+        showErrorDialog(_("Server responded with HTTP code different than 200"));
         return false;
     }
     jsonData=cJSON_Parse(responseInfo->data);
     if(!jsonData){
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response: 2");
+        showErrorDialog(_("Failed to parse response:"));
         return false;
     }
     cJSON* jsonAccessToken=cJSON_GetObjectItemCaseSensitive(jsonData,"access_token");
@@ -155,7 +156,7 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
         cJSON_free((void*)jsonDeviceID);
         cJSON_free((void*)jsonData);
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog("Failed to parse response: 3");
+        showErrorDialog(_("Failed to parse response"));
         return false;
     }
     int userIDDataLength=0;
@@ -167,7 +168,7 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
         cJSON_free((void*)jsonDeviceID);
         cJSON_free((void*)jsonData);
         array_free((void**)userIDData,userIDDataLength);
-        showErrorDialog("Failed to get homeserver name");
+        showErrorDialog(_("Failed to get homeserver name"));
         return false;
     }
     app->loginInfo->homeserverName=(char*)malloc(strlen(userIDData[1])+1);

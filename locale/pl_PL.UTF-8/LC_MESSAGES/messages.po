@@ -1,0 +1,214 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: MatrixIM git\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-10-29 16:16+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: mrkubax10 <mrkubax10@onet.pl>\n"
+"Language-Team: MatrixIM\n"
+"Language: pl_PL\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: matrix/homeserver.c:36 matrix/login.c:81 matrix/register.c:45
+#: matrix/register.c:91 matrix/register.c:159 matrix/room.c:187
+#: matrix/room.c:193 matrix/room.c:222
+msgid "Failed to parse response"
+msgstr "Błąd podczas parsowania odpowiedzi od serwera"
+
+#: matrix/homeserver.c:43
+msgid "Failed to parse response: flows is not array"
+msgstr "Błąd podczas parsowania odpowiedzi od serwera: obiekt flows nie jest tablicą"
+
+#: matrix/homeserver.c:51
+msgid "Failed to parse response: type attribute of Flow object is not string"
+msgstr "Błąd podczas parsowania odpowiedzi od serwera: atrybut type obiektu Flow nie jest napisem"
+
+#: matrix/login.c:49
+msgid "Server did not recognize login type"
+msgstr "Serwer nie rozpoznał typu logowania"
+
+#: matrix/login.c:51
+msgid "Authentication data is incorrect"
+msgstr "Dane logowania są nieprawidłowe"
+
+#: matrix/login.c:61 matrix/register.c:53 matrix/register.c:99
+#: matrix/register.c:119
+msgid "Unknown error"
+msgstr "Nieznany błąd"
+
+#: matrix/login.c:68 matrix/register.c:84
+msgid "Server responded with unexpected data type"
+msgstr "Serwer wysłał odpowiedź z nieoczekiwanym typem danych"
+
+#: matrix/login.c:102 matrix/register.c:171
+msgid "Failed to get homeserver name"
+msgstr "Błąd podczas uzyskiwania nazwy serwera"
+
+#: matrix/register.c:51
+msgid "Username already taken"
+msgstr "Nazwa użytkownika jest już zajęta"
+
+#: matrix/register.c:62
+msgid "Failed to parse response: available attribute is not bool"
+msgstr "Błąd podczas parsowania odpowiedzi od serwera: atrybut available nie jest typu bool"
+
+#: matrix/register.c:69
+msgid "Username is already taken or it is invalid"
+msgstr "Nazwa użytkownika jest już zajęta lub jest niepoprawna"
+
+#: matrix/register.c:106
+msgid "Password is too weak"
+msgstr "Hasło jest za słabe"
+
+#: matrix/register.c:113
+msgid "Invalid authentication method"
+msgstr "Niepoprawna metoda logowania"
+
+#: matrix/register.c:126
+msgid "Failed to parse response: session attribute is not string"
+msgstr "Błąd podczas parsowania odpowiedzi od serwera: atrybut session nie jest napisem"
+
+#: matrix/register.c:141
+msgid "Server responded with HTTP code different than 200"
+msgstr "Serwer wysłał odpowiedź z kodem HTTP innym niż 200"
+
+#: matrix/register.c:147
+msgid "Failed to parse response:"
+msgstr "Błąd podczas parsowania odpowiedzi od serwera:"
+
+#: matrix/room.c:31 matrix/room.c:32 matrix/room.c:86
+msgid "Failed to enter room"
+msgstr "Błąd podczas dołączania do pokoju"
+
+#: matrix/room.c:36 matrix/room.c:39
+#, c-format
+msgid "Failed to enter room: %s"
+msgstr "Błąd podczas dołączania do pokoju: %s"
+
+#: matrix/room.c:50 matrix/room.c:56
+msgid "Failed to parse response while entering room"
+msgstr "Podczas dołączania do pokoju: błąd podczas parsowania odpowiedzi od serwera"
+
+#: matrix/room.c:75
+msgid "You already entered this room"
+msgstr "Już dołączyłeś do tego pokoju"
+
+#: matrix/room.c:105
+msgid "Failed to leave room"
+msgstr "Błąd podczas wychodzenia z pokoju"
+
+#: matrix/room.c:150 matrix/room.c:216
+msgid "Server responded with unexpected datatype"
+msgstr "Serwer wysłał odpowiedź z nieoczekiwanym typem danych"
+
+#: matrix/room.c:158 matrix/room.c:164
+msgid "Failed to parse response while handling error"
+msgstr "Podczas obsługiwania błędu: błąd podczas parsowania odpowiedzi od serwera"
+
+#: matrix/room.c:170
+msgid "This room already exists"
+msgstr "Ten pokój już istnieje"
+
+#: matrix/room.c:172
+msgid "Invalid room state"
+msgstr "Niepoprawny status pokoju"
+
+#: matrix/room.c:174
+msgid "Unsupported room version"
+msgstr "Nieobłsugiwana wersja pokoju"
+
+#: matrix/room.c:181
+msgid "Unexpected HTTP code while handling error"
+msgstr "Podczas obsługi błędu: nieoczekiwany kod HTTP"
+
+#: matrix/room.c:228
+msgid "Failed to parse response: aliases is not array"
+msgstr "Błąd podczas parsowania odpowiedzi od serwera: obiekt aliases nie jest tablicą"
+
+#: matrix/room.c:235
+msgid "Failed to parse response: aliases item is not string"
+msgstr "Błąd podczas parsowania odpowiedzi od serwera: element tablicy aliases nie jest napisem"
+
+#: screens/login_screen.c:22 screens/login_screen.c:43
+msgid "Select homeserver first"
+msgstr "Najpierw wybierz serwer"
+
+#: screens/login_screen.c:28 screens/login_screen.c:49
+msgid "Username field cannot be empty"
+msgstr "Pole nazwa użytkownika nie może być puste"
+
+#: screens/login_screen.c:32 screens/login_screen.c:53
+msgid "Password field cannot be empty"
+msgstr "Pole hasło nie może byc puste"
+
+#: screens/login_screen.c:65
+msgid "Homeserver IP cannot be empty"
+msgstr "Pole IP serwera nie może być puste"
+
+#: screens/login_screen.c:69
+msgid "Homeserver port cannot be empty"
+msgstr "Pole port serwera nie może być puste"
+
+#: screens/login_screen.c:82
+msgid "Failed to load UI file matrixim_login_screen.ui"
+msgstr "Błąd podczas wczytywania pliku UI matrixim_login_screen.ui"
+
+#: screens/login_screen.c:132
+msgid "Failed to connect to homeserver"
+msgstr "Nie można połączyć się z serwerem"
+
+#: screens/main_screen.c:33
+msgid "You need to select room to send message"
+msgstr "Musisz wybrać pokój aby wysłać wiadomość"
+
+#: screens/main_screen.c:51
+msgid "Failed to send message"
+msgstr "Błąd podczas wysyłania wiadomości"
+
+#: screens/main_screen.c:68
+msgid "Room alias (for example #room:homeserver)"
+msgstr "Alias pokoju (na przykład #room:homeserver)"
+
+#: screens/main_screen.c:85
+msgid "Are you sure?"
+msgstr "Czy jesteś pewien?"
+
+#: screens/main_screen.c:92
+msgid "You need to select room to leave"
+msgstr "Musisz wybrać pokój, z którego chcesz wyjść"
+
+#: screens/main_screen.c:110
+msgid "MatrixIM - free and open-source Matrix client"
+msgstr "MatrixIM - wolny i otwartoźródłowy klient Matrix"
+
+#: screens/main_screen.c:141
+msgid "Failed to synchronize entered rooms"
+msgstr "Błąd podczas synchronizacji pokoi"
+
+#: screens/main_screen.c:146 screens/main_screen.c:153
+msgid "Failed to parse entered rooms data"
+msgstr "Błąd podczas parsowania pokoi"
+
+#: screens/main_screen.c:213
+msgid "Failed to logout"
+msgstr "Błąd podczas wylogowywania"
+
+#: screens/main_screen.c:232
+msgid "Failed to load UI file matrixim_main_screen.ui"
+msgstr "Błąd podczas wczytywania pliku UI matrixim_main_screen.ui"
+
+#: screens/new_room_dialog.c:18
+msgid "Failed to load UI file matrixim_new_room_dialog.ui"
+msgstr "Błąd podczas wczytywania pliku UI matrixim_new_room_dialog.ui"
+
+#: screens/new_room_dialog.c:41
+msgid "Alias cannot be empty"
+msgstr "Pole alias nie może być puste"

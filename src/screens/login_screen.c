@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "screens/main_screen.h"
 #include "utils/message.h"
+#include "utils/gettext_util.h"
 LoginScreen* loginScreen;
 LoginScreen* LoginScreen_new(){
     LoginScreen* output=(LoginScreen*)malloc(sizeof(LoginScreen));
@@ -18,17 +19,17 @@ LoginScreen* LoginScreen_new(){
 
 void loginscreen_buttonLogin_clicked(GtkWidget* widget,gpointer userData){
     if(!loginScreen->lastSelectedHomeserver){
-        showInfoDialog("Select homeserver first");
+        showInfoDialog(_("Select homeserver first"));
         return;
     }
     char* username=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryUsername));
     char* password=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryPassword));
     if(strcmp(username,"")==0){
-        showInfoDialog("Username field cannot be empty");
+        showInfoDialog(_("Username field cannot be empty"));
         return;
     }
     if(strcmp(password,"")==0){
-        showInfoDialog("Password field cannot be empty");
+        showInfoDialog(_("Password field cannot be empty"));
         return;
     }
     char* ip=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryHomeserver));
@@ -39,17 +40,17 @@ void loginscreen_buttonLogin_clicked(GtkWidget* widget,gpointer userData){
 }
 void loginscreen_buttonRegister_clicked(GtkWidget* widget,gpointer userData){
     if(!loginScreen->lastSelectedHomeserver){
-        showInfoDialog("Select homeserver first");
+        showInfoDialog(_("Select homeserver first"));
         return;
     }
     char* username=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryUsername));
     char* password=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryPassword));
     if(strcmp(username,"")==0){
-        showInfoDialog("Username field cannot be empty");
+        showInfoDialog(_("Username field cannot be empty"));
         return;
     }
     if(strcmp(password,"")==0){
-        showInfoDialog("Password field cannot be empty");
+        showInfoDialog(_("Password field cannot be empty"));
         return;
     }
     if(matrix_registerPassword(loginScreen->lastSelectedHomeserver,username,password)){
@@ -61,11 +62,11 @@ void loginscreen_buttonHomeserverSelect_clicked(GtkWidget* widget,gpointer userD
     char* ip=(char*)gtk_entry_get_text(GTK_ENTRY(loginScreen->entryHomeserver));
     const char* port=gtk_entry_get_text(GTK_ENTRY(loginScreen->entryPort));
     if(strcmp(ip,"")==0){
-        showInfoDialog("Homeserver IP cannot be empty");
+        showInfoDialog(_("Homeserver IP cannot be empty"));
         return;
     }
     if(strcmp(port,"")==0){
-        showInfoDialog("Homeserver port cannot be empty");
+        showInfoDialog(_("Homeserver port cannot be empty"));
         return;
     }
     loginscreen_selectHomeserver(ip,atoi(port));
@@ -78,7 +79,7 @@ void loginscreen_init(){
     loginScreen->lastSelectedHomeserver=0;
     GtkBuilder* builder=gtk_builder_new();
     if(!gtk_builder_add_from_file(GTK_BUILDER(builder),"ui/matrixim_login_screen.ui",0)){
-        showErrorDialog("Failed to load UI file matrixim_login_screen.ui");
+        showErrorDialog(_("Failed to load UI file matrixim_login_screen.ui"));
         exit(0);
     }
     gtk_builder_connect_signals(builder,0);
@@ -128,7 +129,7 @@ bool loginscreen_selectHomeserver(char* ip,int port){
         Socket_disconnect(app->homeserverSocket);
     }
     if(!Socket_connect(app->homeserverSocket,ip,port)){
-        showErrorDialog("Failed to connect to homeserver");
+        showErrorDialog(_("Failed to connect to homeserver"));
         return false;
     }
     HomeserverInfo* homeserver=matrix_getHomeserverInfo(ip,port);

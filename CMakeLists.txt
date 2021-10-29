@@ -18,6 +18,7 @@ add_executable(MatrixIM
 	src/utils/message.c
 	src/utils/vector.c
 	src/utils/filesystem.c
+	src/utils/gettext_util.c
 )
 if(UNIX)
 	find_package(PkgConfig REQUIRED)

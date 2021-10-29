@@ -10,6 +10,7 @@
 #include <cjson/cJSON.h>
 #include "utils/message.h"
 #include <pthread.h>
+#include "utils/gettext_util.h"
 MainScreen* MainScreen_new(){
     MainScreen* output=(MainScreen*)malloc(sizeof(MainScreen));
     output->enteredRooms=Vector_new();
@@ -29,7 +30,7 @@ void mainscreen_messageEntry_key(GtkWidget* widget,GdkEvent* event,gpointer data
         GtkTreeModel* listRoomsModel=GTK_TREE_MODEL(mainScreen->listRoomsStore);
         GList* selectedRows=gtk_tree_selection_get_selected_rows(selection,&listRoomsModel);
         if(!selectedRows){
-            showInfoDialog("You need to select room to send message");
+            showInfoDialog(_("You need to select room to send message"));
             return;
         }
         GtkTreePath* treePath=selectedRows->data;
@@ -47,7 +48,7 @@ void mainscreen_messageEntry_key(GtkWidget* widget,GdkEvent* event,gpointer data
             free(fullMsg);
         }
         else{
-            gtk_text_buffer_insert(buffer,&iter,"Failed to send message",strlen("Failed to send message"));
+            gtk_text_buffer_insert(buffer,&iter,_("Failed to send message"),strlen(_("Failed to send message")));
         }
         gtk_text_buffer_insert(buffer,&iter,"\n",1);
         gtk_entry_set_text(GTK_ENTRY(mainScreen->messageEntry),"");
@@ -64,7 +65,7 @@ void mainscreen_menuFileLogout_activated(GtkWidget* widget,gpointer userData){
     loginscreen_init();
 }
 void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData){
-    char* room=showInputDialog("Room alias (for example #room:homeserver)");
+    char* room=showInputDialog(_("Room alias (for example #room:homeserver)"));
     if(room!=0){
         char* roomID=matrix_joinRoom(room);
         if(!roomID)
@@ -81,14 +82,14 @@ void mainscreen_menuMatrixJoinRoom_activated(GtkWidget* widget,gpointer userData
     }
 }
 void mainscreen_menuMatrixLeaveRoom_activated(GtkWidget* widget,gpointer userData){
-    int res=showYesNoDialog("Are you sure?");
+    int res=showYesNoDialog(_("Are you sure?"));
     if(res==-8){
         GtkTreeSelection* selection=gtk_tree_view_get_selection(GTK_TREE_VIEW(mainScreen->listRooms));
         gtk_tree_selection_set_mode(selection,GTK_SELECTION_SINGLE);
         GtkTreeModel* listRoomsModel=GTK_TREE_MODEL(mainScreen->listRoomsStore);
         GList* selectedRows=gtk_tree_selection_get_selected_rows(selection,&listRoomsModel);
         if(!selectedRows){
-            showInfoDialog("You need to select room to leave");
+            showInfoDialog(_("You need to select room to leave"));
             return;
         }
         GtkTreePath* treePath=selectedRows->data;
@@ -106,7 +107,7 @@ void mainscreen_menuMatrixCreateRoom_activated(GtkWidget* widget,gpointer userDa
 }
 void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userData){
     gtk_show_about_dialog(GTK_WINDOW(app->window),
-        "name","MatrixIM - free and open-source Matrix client",
+        "name",_("MatrixIM - free and open-source Matrix client"),
         "version","git",
         "copyright","2021 (C) mrkubax10",
         "logo-icon-name","gtk-about",
@@ -137,19 +138,19 @@ void mainscreen_synchronizeEnteredRooms(){
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* response=http_parseResponse(responseData);
     if(response->code!=HTTP_CODE_OK){
-        showErrorDialog("Failed to synchronize entered rooms");
+        showErrorDialog(_("Failed to synchronize entered rooms"));
         return;
     }
     cJSON* jsonData=cJSON_Parse(response->data);
     if(!jsonData){
-        showErrorDialog("Failed to parse entered rooms data");
+        showErrorDialog(_("Failed to parse entered rooms data"));
         mainscreen_finish();
         loginscreen_init();
         return;
     }
     cJSON* enteredRooms=cJSON_GetObjectItemCaseSensitive(jsonData,"joined_rooms");
     if(!cJSON_IsArray(enteredRooms)){
-        showErrorDialog("Failed to parse entered rooms data");
+        showErrorDialog(_("Failed to parse entered rooms data"));
         mainscreen_finish();
         loginscreen_init();
         return;
@@ -209,7 +210,7 @@ bool mainscreen_logout(){
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* response=http_parseResponse(responseData);
     if(response->code!=HTTP_CODE_OK){
-        GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,"Failed to logout");
+        GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("Failed to logout"));
         gtk_dialog_run(GTK_DIALOG(message));
         gtk_widget_destroy(message);
         HTTPResponseInfo_destroy(response);
@@ -228,7 +229,7 @@ void mainscreen_init(){
     mainScreen=MainScreen_new();
     GtkBuilder* builder=gtk_builder_new();
     if(!gtk_builder_add_from_file(GTK_BUILDER(builder),"ui/matrixim_main_screen.ui",0)){
-        showErrorDialog("Failed to load UI file matrixim_main_screen.ui");
+        showErrorDialog(_("Failed to load UI file matrixim_main_screen.ui"));
         exit(0);
     }
     gtk_builder_connect_signals(builder,0);

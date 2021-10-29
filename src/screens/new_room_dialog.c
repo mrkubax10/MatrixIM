@@ -5,7 +5,7 @@
 #include "utils/vector.h"
 #include "screens/main_screen.h"
 #include <stdio.h>
-
+#include "utils/gettext_util.h"
 NewRoomDialog* newRoomDialog;
 NewRoomDialog* NewRoomDialog_new(){
     NewRoomDialog* output=malloc(sizeof(NewRoomDialog));
@@ -15,7 +15,7 @@ void newroomdialog_init(){
     newRoomDialog=NewRoomDialog_new();
     GtkBuilder* builder=gtk_builder_new();
     if(!gtk_builder_add_from_file(builder,"ui/matrixim_new_room_dialog.ui",0)){
-        showErrorDialog("Failed to load UI file matrixim_new_room_dialog.ui");
+        showErrorDialog(_("Failed to load UI file matrixim_new_room_dialog.ui"));
         exit(0);
     }
     gtk_builder_connect_signals(builder,0);
@@ -38,7 +38,7 @@ void newroomdialog_buttonCreate_activated(GtkWidget* widget,gpointer userData){
     char* name=(char*)gtk_entry_get_text(GTK_ENTRY(newRoomDialog->entryRoomName));
     char* topic=(char*)gtk_entry_get_text(GTK_ENTRY(newRoomDialog->entryRoomTopic));
     if(strcmp(alias,"")==0){
-        showInfoDialog("Alias cannot be empty");
+        showInfoDialog(_("Alias cannot be empty"));
         return;
     }
     char* roomID=matrix_createRoom(alias,name,topic,gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(newRoomDialog->checkboxVisible)));

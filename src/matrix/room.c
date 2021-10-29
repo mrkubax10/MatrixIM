@@ -5,6 +5,7 @@
 #include "app.h"
 #include "screens/main_screen.h"
 #include "utils/message.h"
+#include "utils/gettext_util.h"
 MatrixRoom* MatrixRoom_new(){
     MatrixRoom* output=(MatrixRoom*)malloc(sizeof(MatrixRoom));
     output->chatBuffer=gtk_text_buffer_new(0);
@@ -27,15 +28,15 @@ char* matrix_joinRoom(char* room){
     HTTPResponseInfo* response=http_parseResponse(responseData);
     if(response->code!=HTTP_CODE_OK){
         cJSON* jsonData=cJSON_Parse(response->data);
-        char* errorMsg=(char*)malloc(strlen("Failed to enter room")+1);
-        strcpy(errorMsg,"Failed to enter room");
+        char* errorMsg=(char*)malloc(strlen(_("Failed to enter room"))+1);
+        strcpy(errorMsg,_("Failed to enter room"));
         if(jsonData){
             cJSON* error=cJSON_GetObjectItemCaseSensitive(jsonData,"error");
             if(error){
-                int length=snprintf(0,0,"Failed to enter room: %s",error->valuestring);
+                int length=snprintf(0,0,_("Failed to enter room: %s"),error->valuestring);
                 free(errorMsg);
                 errorMsg=(char*)malloc(length+1);
-                snprintf(errorMsg,length+1,"Failed to enter room: %s",error->valuestring);
+                snprintf(errorMsg,length+1,_("Failed to enter room: %s"),error->valuestring);
             }
             cJSON_Delete(jsonData);
         }
@@ -46,13 +47,13 @@ char* matrix_joinRoom(char* room){
     }
     cJSON* jsonData=cJSON_Parse(response->data);
     if(!jsonData){
-        showErrorDialog("Failed to parse response while entering room");
+        showErrorDialog(_("Failed to parse response while entering room"));
         HTTPResponseInfo_destroy(response);
         return 0;
     }
     cJSON* roomID=cJSON_GetObjectItemCaseSensitive(jsonData,"room_id");
     if(!roomID){
-        showErrorDialog("Failed to parse response while entering room");
+        showErrorDialog(_("Failed to parse response while entering room"));
         HTTPResponseInfo_destroy(response);
         cJSON_Delete(jsonData);
         return 0;
@@ -71,7 +72,7 @@ bool matrix_joinRoomWithID(char* id){
     for(unsigned int i=0; i<mainScreen->enteredRooms->capacity; i++){
         MatrixRoom* matrixRoom=mainScreen->enteredRooms->data[i];
         if(strcmp(matrixRoom->roomID,id)==0){
-            showInfoDialog("You already entered this room");
+            showInfoDialog(_("You already entered this room"));
             return false;
         }
     }
@@ -82,7 +83,7 @@ bool matrix_joinRoomWithID(char* id){
     free(path);
     HTTPResponseInfo* response=http_readResponse(app->homeserverSocket);
     if(response->code!=HTTP_CODE_OK){
-        showErrorDialog("Failed to enter room");
+        showErrorDialog(_("Failed to enter room"));
         HTTPResponseInfo_destroy(response);
         return false;
     }
@@ -101,7 +102,7 @@ bool matrix_leaveRoom(char* roomID){
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* response=http_parseResponse(responseData);
     if(response->code!=HTTP_CODE_OK){
-        showErrorDialog("Failed to leave room");
+        showErrorDialog(_("Failed to leave room"));
         HTTPResponseInfo_destroy(response);
         return false;
     }
@@ -146,7 +147,7 @@ char* matrix_createRoom(char* alias,char* name,char* topic,bool visible){
     cJSON_Delete(root);
     HTTPResponseInfo* response=http_readResponse(app->homeserverSocket);
     if(strcmp(response->datatype,"application/json")!=0){
-        showErrorDialog("Server responded with unexpected datatype");
+        showErrorDialog(_("Server responded with unexpected datatype"));
         HTTPResponseInfo_destroy(response);
         return 0;
     }
@@ -154,42 +155,42 @@ char* matrix_createRoom(char* alias,char* name,char* topic,bool visible){
         if(response->code==HTTP_CODE_BAD_REQUEST){
             cJSON* jsonData=cJSON_Parse(response->data);
             if(!jsonData){
-                showErrorDialog("Failed to parse response while handling error");
+                showErrorDialog(_("Failed to parse response while handling error"));
                 HTTPResponseInfo_destroy(response);
                 return 0;
             }
             cJSON* errcode=cJSON_GetObjectItemCaseSensitive(jsonData,"errcode");
             if(!errcode){
-                showErrorDialog("Failed to parse response while handling error");
+                showErrorDialog(_("Failed to parse response while handling error"));
                 HTTPResponseInfo_destroy(response);
                 cJSON_Delete(jsonData);
                 return 0;
             }
             if(strcmp(errcode->valuestring,"M_ROOM_IN_USE")==0)
-                showErrorDialog("This room already exists");
+                showErrorDialog(_("This room already exists"));
             else if(strcmp(errcode->valuestring,"M_INVALID_ROOM_STATE")==0)
-                showErrorDialog("Invalid room state");
+                showErrorDialog(_("Invalid room state"));
             else if(strcmp(errcode->valuestring,"M_UNSUPPORTED_ROOM_VERSION")==0)
-                showErrorDialog("Unsupported room version");
+                showErrorDialog(_("Unsupported room version"));
             else
                 showErrorDialog("Unknown error");
             HTTPResponseInfo_destroy(response);
             cJSON_Delete(jsonData);
             return 0;
         }
-        showErrorDialog("Unexpected HTTP code while handling error");
+        showErrorDialog(_("Unexpected HTTP code while handling error"));
         HTTPResponseInfo_destroy(response);
         return 0;
     }
     cJSON* jsonData=cJSON_Parse(response->data);
     if(!jsonData){
-        showErrorDialog("Failed to parse response");
+        showErrorDialog(_("Failed to parse response"));
         HTTPResponseInfo_destroy(response);
         return 0;
     }
     cJSON* roomID=cJSON_GetObjectItemCaseSensitive(jsonData,"room_id");
     if(!roomID){
-        showErrorDialog("Failed to parse response");
+        showErrorDialog(_("Failed to parse response"));
         HTTPResponseInfo_destroy(response);
         cJSON_Delete(jsonData);
         return 0;
@@ -212,26 +213,26 @@ char* matrix_getRoomAliasByID(char* id){
     http_sendGETRequest(url,app->loginInfo->homeserverName,app->homeserverSocket,app->loginInfo->accessToken);
     HTTPResponseInfo* response=http_readResponse(app->homeserverSocket);
     if(strcmp(response->datatype,"application/json")!=0){
-        showErrorDialog("Server responded with unexpected datatype");
+        showErrorDialog(_("Server responded with unexpected datatype"));
         HTTPResponseInfo_destroy(response);
         return 0;
     }
     cJSON* jsonData=cJSON_Parse(response->data);
     if(!jsonData){
-        showErrorDialog("Failed to parse response");
+        showErrorDialog(_("Failed to parse response"));
         HTTPResponseInfo_destroy(response);
         return 0;
     }
     cJSON* aliases=cJSON_GetObjectItemCaseSensitive(jsonData,"aliases");
     if(!cJSON_IsArray(aliases)){
-        showErrorDialog("Failed to parse response: aliases is not array");
+        showErrorDialog(_("Failed to parse response: aliases is not array"));
         cJSON_Delete(jsonData);
         HTTPResponseInfo_destroy(response);
         return 0;
     }
     cJSON* aliasesItem=cJSON_GetArrayItem(aliases,0);
     if(!cJSON_IsString(aliasesItem)){
-        showErrorDialog("Failed to parse response: aliases item is not string");
+        showErrorDialog(_("Failed to parse response: aliases item is not string"));
         cJSON_Delete(jsonData);
         HTTPResponseInfo_destroy(response);
         return 0;
