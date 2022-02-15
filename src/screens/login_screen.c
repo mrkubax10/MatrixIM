@@ -1,15 +1,17 @@
 #include "screens/login_screen.h"
-#include "app.h"
+
 #include <stdio.h>
-#include "http/http.h"
 #include <cjson/cJSON.h>
+#include <stdlib.h>
+
+#include "app.h"
+#include "http/http.h"
 #include "matrix/login.h"
 #include "matrix/register.h"
 #include "matrix/homeserver.h"
-#include "utils.h"
-#include <stdlib.h>
 #include "screens/main_screen.h"
 #include "utils/message.h"
+#include "utils/str.h"
 #include "translation/translation.h"
 LoginScreen* loginScreen;
 LoginScreen* LoginScreen_new(){

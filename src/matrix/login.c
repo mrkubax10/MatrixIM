@@ -1,11 +1,14 @@
 #include "matrix/login.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <cjson/cJSON.h>
-#include "utils.h"
+
 #include "app.h"
 #include "http/http.h"
 #include "utils/message.h"
+#include "utils/array.h"
+#include "utils/str.h"
 #include "translation/translation.h"
 LoginInfo* LoginInfo_new(){
     LoginInfo* output=(LoginInfo*)malloc(sizeof(LoginInfo));

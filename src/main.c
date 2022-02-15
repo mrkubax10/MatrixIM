@@ -5,12 +5,10 @@
 #include "network/socket.h"
 #include "http/http.h"
 #include "utils/filesystem.h"
-#include "utils.h"
 #include "translation/translation.h"
 int main(int argc,char** args){
     gtk_init(&argc,&args);
     srand(time(0));
-    translation_setLanguage("pl");
     app=Application_new();
     ApplicationSettings_load(app->settings);
     GtkApplication* application=gtk_application_new("pl.mrkubax10.matrixim",G_APPLICATION_FLAGS_NONE);

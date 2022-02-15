@@ -1,8 +1,11 @@
 #include "http/http.h"
+
 #include <string.h>
 #include <stdlib.h>
-#include "utils.h"
 #include <stdio.h>
+
+#include "utils/array.h"
+#include "utils/str.h"
 const char* HTTP_VERSION="HTTP/1.1";
 HTTPResponseInfo* HTTPResponseInfo_new(){
     HTTPResponseInfo* output=(HTTPResponseInfo*)malloc(sizeof(HTTPResponseInfo));

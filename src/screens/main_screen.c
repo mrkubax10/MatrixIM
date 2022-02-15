@@ -1,15 +1,16 @@
 #include "screens/main_screen.h"
+
 #include <stdlib.h>
-#include "app.h"
+#include <pthread.h>
 #include <gtk/gtk.h>
 #include <stdio.h>
+#include <cjson/cJSON.h>
+
 #include "app.h"
 #include "http/http.h"
 #include "screens/login_screen.h"
 #include "screens/new_room_dialog.h"
-#include <cjson/cJSON.h>
 #include "utils/message.h"
-#include <pthread.h>
 #include "translation/translation.h"
 MainScreen* MainScreen_new(){
     MainScreen* output=(MainScreen*)malloc(sizeof(MainScreen));

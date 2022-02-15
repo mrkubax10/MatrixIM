@@ -1,10 +1,12 @@
 #include "screens/new_room_dialog.h"
+
 #include <stdlib.h>
+#include <stdio.h>
+
 #include "matrix/room.h"
 #include "utils/message.h"
 #include "utils/vector.h"
 #include "screens/main_screen.h"
-#include <stdio.h>
 #include "translation/translation.h"
 NewRoomDialog* newRoomDialog;
 NewRoomDialog* NewRoomDialog_new(){

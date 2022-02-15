@@ -3,7 +3,8 @@
 #include "http/http.h"
 #include "app.h"
 #include "utils/message.h"
-#include "utils.h"
+#include "utils/array.h"
+#include "utils/str.h"
 #include "translation/translation.h"
 char* matrix_createPasswordRegisterRequest(char* username,char* password,char* deviceName,char* deviceID,char* session){
     cJSON* root=cJSON_CreateObject();

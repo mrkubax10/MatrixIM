@@ -1,10 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(MatrixIM C)
-set(CMAKE_BUILD_TYPE Debug)
 add_executable(MatrixIM
 	src/main.c
 	src/app.c
-	src/utils.c
 	src/http/http.c
 	src/matrix/login.c
 	src/matrix/register.c
@@ -19,6 +17,8 @@ add_executable(MatrixIM
 	src/utils/message.c
 	src/utils/vector.c
 	src/utils/filesystem.c
+	src/utils/str.c
+	src/utils/array.c
 )
 if(UNIX)
 	find_package(PkgConfig REQUIRED)

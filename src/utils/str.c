@@ -1,7 +1,5 @@
-#include "utils.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "utils/str.h"
+
 #include <stdbool.h>
 char** split(char* str,char ch,int* len){
     char** output=0;
@@ -85,13 +83,6 @@ char** splitByString(char* str,char* str2,int* len){
     *len=elements;
     return output;
 }
-void array_free(void** data,int len){
-    for(int i=0; i<len; i++){
-       free(data[i]);
-    }
-    free(data);
-}
-
 char* intToString(int num){
     int length=snprintf(0,0,"%d",num);
     char* output=(char*)malloc(length+1);

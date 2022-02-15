@@ -1,7 +1,6 @@
 #include "app.h"
 #include "screens/login_screen.h"
 #include <cjson/cJSON.h>
-#include "utils.h"
 #include "utils/filesystem.h"
 #include <stdlib.h>
 Application* app;

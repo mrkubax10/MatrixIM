@@ -1,8 +1,6 @@
-#ifndef SRC_UTILS_H
-#define SRC_UTILS_H
-#include <stdbool.h>
+#ifndef SRC_UTILS_STR_H
+#define SRC_UTILS_STR_H
 char** split(char* str,char ch,int* len);
 char** splitByString(char* str,char* str2,int* len);
-void array_free(void** data,int len);
 char* intToString(int num);
 #endif
