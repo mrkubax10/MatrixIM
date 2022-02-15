@@ -227,7 +227,7 @@ bool mainscreen_logout(){
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* response=http_parseResponse(responseData);
     if(response->code!=HTTP_CODE_OK){
-        GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("Failed to logout"));
+        GtkWidget* message=gtk_message_dialog_new(GTK_WINDOW(app->window),GTK_DIALOG_DESTROY_WITH_PARENT,GTK_MESSAGE_ERROR,GTK_BUTTONS_OK,_("Failed to logout"),0);
         gtk_dialog_run(GTK_DIALOG(message));
         gtk_widget_destroy(message);
         HTTPResponseInfo_destroy(response);
@@ -246,7 +246,9 @@ void mainscreen_init(){
     mainScreen=MainScreen_new();
     GtkBuilder* builder=gtk_builder_new();
     if(!gtk_builder_add_from_file(GTK_BUILDER(builder),"ui/matrixim_main_screen.ui",0)){
-        showErrorDialog(_("Failed to load UI file matrixim_main_screen.ui"));
+        char msg[512];
+        snprintf(msg,512,_("Failed to load UI file %s"),"matrixim_main_screen.ui");
+        showErrorDialog(msg);
         exit(0);
     }
     gtk_builder_connect_signals(builder,0);

@@ -22,6 +22,7 @@
 
 #include "utils/array.h"
 #include "utils/str.h"
+#include "utils/log.h"
 const char* HTTP_VERSION="HTTP/1.1";
 HTTPResponseInfo* HTTPResponseInfo_new(){
     HTTPResponseInfo* output=(HTTPResponseInfo*)malloc(sizeof(HTTPResponseInfo));
@@ -100,7 +101,7 @@ HTTPResponseInfo* http_parseResponse(char* response){
     char** lines=splitByString(response,"\r\n",&linesCount);
     char** header=split(lines[0],' ',&headerDataCount);
     if(strcmp(header[0],HTTP_VERSION)!=0)
-        printf("(Warn) [HTTP] Received response with different HTTP version than 1.1\n");
+        log_info("HTTP","Received response with different HTTP version than 1.1");
     output->version=(char*)malloc(strlen(header[0])+1);
     memcpy(output->version,header[0],strlen(header[0]));
     output->version[strlen(header[0])]=0;

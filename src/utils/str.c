@@ -17,6 +17,9 @@
 #include "utils/str.h"
 
 #include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 char** split(char* str,char ch,int* len){
     char** output=0;
     int elements=0,tempLength=0;

@@ -97,7 +97,9 @@ void loginscreen_init(){
     loginScreen->lastSelectedHomeserver=0;
     GtkBuilder* builder=gtk_builder_new();
     if(!gtk_builder_add_from_file(GTK_BUILDER(builder),"ui/matrixim_login_screen.ui",0)){
-        showErrorDialog(_("Failed to load UI file matrixim_login_screen.ui"));
+        char msg[512];
+        snprintf(msg,512,_("Failed to load UI file %s"),"matrixim_login_screen.ui");
+        showErrorDialog(msg);
         exit(0);
     }
     gtk_builder_connect_signals(builder,0);

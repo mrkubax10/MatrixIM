@@ -15,12 +15,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "matrix/register.h"
+
 #include <cjson/cJSON.h>
+
 #include "http/http.h"
 #include "app.h"
 #include "utils/message.h"
 #include "utils/array.h"
 #include "utils/str.h"
+#include "utils/log.h"
 #include "translation/translation.h"
 char* matrix_createPasswordRegisterRequest(char* username,char* password,char* deviceName,char* deviceID,char* session){
     cJSON* root=cJSON_CreateObject();
@@ -55,7 +58,6 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
         HTTPResponseInfo_destroy(responseInfo);
         return false;
     }
-    printf("%s\n",responseInfo->data);
     cJSON* jsonData=cJSON_Parse(responseInfo->data);
     if(!jsonData){
         HTTPResponseInfo_destroy(responseInfo);
@@ -190,7 +192,7 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
     }
     app->loginInfo->homeserverName=(char*)malloc(strlen(userIDData[1])+1);
     strcpy(app->loginInfo->homeserverName,userIDData[1]);
-    printf("(Log) [Login] User ID: %s\n",jsonUserID->valuestring);
+    log_info("Register","User ID: %s",jsonUserID->valuestring);
     array_free((void**)userIDData,userIDDataLength);
     HTTPResponseInfo_destroy(responseInfo);
     cJSON_free((void*)jsonUserID);

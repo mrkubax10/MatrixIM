@@ -18,9 +18,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <cjson/cJSON.h>
+
 #include "app.h"
 #include "http/http.h"
 #include "utils/message.h"
+#include "utils/log.h"
 #include "translation/translation.h"
 HomeserverInfo* HomeserverInfo_new(){
     HomeserverInfo* output=malloc(sizeof(HomeserverInfo));
@@ -43,7 +45,7 @@ HomeserverInfo* matrix_getHomeserverInfo(char* ip,int port){
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* response=http_parseResponse(responseData);
     if(response->code!=HTTP_CODE_OK){
-        printf("(Warn) [Login] Server returned HTTP code: %d while getting available login methods\n",response->code);
+        log_warning("Homeserver","Server returned HTTP code: %d while getting available login methods",response->code);
         HTTPResponseInfo_destroy(response);
         return 0;
     }

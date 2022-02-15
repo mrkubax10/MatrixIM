@@ -16,25 +16,28 @@
 
 #if defined(__unix__)
 #include "network/socket.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <netinet/tcp.h>
 #include <fcntl.h>
+
+#include "utils/log.h"
 bool Socket_connect(Socket* sock,char* address,int port){
     if(sock->connected){
-        printf("(Warn) [Socket] Socket already connected\n");
+        log_warning("Socket","Socket already connected");
         return false;
     }
     sock->port=port;
     sock->sockfd=socket(AF_INET,SOCK_STREAM,0);
     if(sock->sockfd<0){
-        printf("(Warn) [Socket] Failed to open socket\n");
+        log_warning("Socket","Failed to open socket");
         return false;
     }
     sock->serverInfo=gethostbyname(address);
     if(!sock->serverInfo){
-        printf("(Warn) [Socket] Failed to resolve host %s\n",address);
+        log_warning("Socket","Failed to resolve host %s",address);
         return false;
     }
     bzero((char*)&sock->address,sizeof(sock->address));
@@ -44,7 +47,7 @@ bool Socket_connect(Socket* sock,char* address,int port){
     sock->address.sin_port=htons(port);
     setsockopt(sock->sockfd,IPPROTO_TCP,TCP_SYNCNT,&retries,sizeof(retries));
     if(connect(sock->sockfd,(struct sockaddr*)&sock->address,sizeof(sock->address))<0){
-        printf("(Warn) [Socket] Failed to connect to host %s\n",address);
+        log_warning("Socket","Failed to connect to host %s",address);
         return false;
     }
     sock->connected=true;
@@ -52,22 +55,22 @@ bool Socket_connect(Socket* sock,char* address,int port){
 }
 void Socket_send(Socket* sock,char* data,int len){
     if(!sock->connected){
-        printf("(Warn) [Socket] Failed to send data: socket not connected\n");
+        log_warning("Socket","Failed to send data: socket not connected");
         return;
     }
     int n=write(sock->sockfd,data,len);
     if(n<0)
-        printf("(Warn) [Socket] Failed to send data: error writing\n");
+        log_warning("Socket","Failed to send data: error writing");
 }
 int Socket_read(Socket* sock,char* dest,int maxlen){
     if(!sock->connected){
-        printf("(Warn) [Socket] Failed to read data: socket not connected\n");
+        log_warning("Socket","Failed to read data: socket not connected");
         return 0;
     }
     bzero(dest,maxlen);
     int n=read(sock->sockfd,dest,maxlen);
     if(n<0){
-        printf("(Warn) [Socket] Failed to read from socket: error reading\n");
+        log_warning("Socket","Failed to read from socket: error reading");
         return n;
     }
     return n;
@@ -75,7 +78,7 @@ int Socket_read(Socket* sock,char* dest,int maxlen){
 char* Socket_readAll(Socket* sock,int* count){
     // FIXME: make this function actually work
     if(!sock->connected){
-        printf("(Warn) [Socket] Failed to read data: socket not connected\n");
+        log_warning("Socket","Failed to read data: socket not connected");
         *count=0;
         return 0;
     }

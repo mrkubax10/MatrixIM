@@ -15,8 +15,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "matrix/room.h"
+
 #include <stdlib.h>
 #include <cjson/cJSON.h>
+
 #include "http/http.h"
 #include "app.h"
 #include "screens/main_screen.h"

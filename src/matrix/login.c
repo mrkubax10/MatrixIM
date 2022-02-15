@@ -25,6 +25,7 @@
 #include "utils/message.h"
 #include "utils/array.h"
 #include "utils/str.h"
+#include "utils/log.h"
 #include "translation/translation.h"
 LoginInfo* LoginInfo_new(){
     LoginInfo* output=(LoginInfo*)malloc(sizeof(LoginInfo));
@@ -123,7 +124,7 @@ bool matrix_loginPassword(char* ip,char* username,char* password,char* deviceNam
     }
     app->loginInfo->homeserverName=(char*)malloc(strlen(userIDData[1])+1);
     strcpy(app->loginInfo->homeserverName,userIDData[1]);
-    printf("(Log) [Login] User ID: %s\n",jsonUserID->valuestring);
+    log_info("Login","User ID: %s",jsonUserID->valuestring);
     array_free((void**)userIDData,userIDDataLength);
     HTTPResponseInfo_destroy(response);
     cJSON_free((void*)jsonUserID);

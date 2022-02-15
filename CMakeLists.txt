@@ -19,6 +19,7 @@ add_executable(MatrixIM
 	src/utils/filesystem.c
 	src/utils/str.c
 	src/utils/array.c
+	src/utils/log.c
 )
 if(UNIX)
 	find_package(PkgConfig REQUIRED)

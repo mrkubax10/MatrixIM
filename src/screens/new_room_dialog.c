@@ -33,7 +33,9 @@ void newroomdialog_init(){
     newRoomDialog=NewRoomDialog_new();
     GtkBuilder* builder=gtk_builder_new();
     if(!gtk_builder_add_from_file(builder,"ui/matrixim_new_room_dialog.ui",0)){
-        showErrorDialog(_("Failed to load UI file matrixim_new_room_dialog.ui"));
+        char msg[512];
+        snprintf(msg,512,_("Failed to load UI file %s"),"matrixim_new_room_dialog.ui");
+        showErrorDialog(msg);
         exit(0);
     }
     gtk_builder_connect_signals(builder,0);

@@ -20,6 +20,8 @@
 #include <cjson/cJSON.h>
 #include "utils/filesystem.h"
 #include <stdlib.h>
+
+#include "utils/log.h"
 Application* app;
 ApplicationSettings* ApplicationSettings_new(){
     ApplicationSettings* output=malloc(sizeof(ApplicationSettings));
@@ -35,16 +37,16 @@ void ApplicationSettings_load(ApplicationSettings* settings){
     strcpy(configDirCopy,app->configDir);
     strcat(configDirCopy,"/config.json");
     char* configData=loadFullFile(configDirCopy);
-    printf("(Log) [Config] Loading config from %s\n",configDirCopy);
+    log_info("Config","Loading config from %s",configDirCopy);
     if(!configData){
-        printf("(Warn) [Config] Failed to load config, using defaults instead\n");
+        log_warning("Config","Failed to load config, using defaults instead");
         free(configDirCopy);
         return;
     }
     free(configDirCopy);
     const cJSON* jsonData=cJSON_Parse(configData);
     if(!jsonData){
-        printf("(Warn) [Config] Failed to parse settings\n");
+        log_warning("Config","Failed to parse config");
         free(configData);
         return;
     }
@@ -89,19 +91,19 @@ void ApplicationSettings_save(ApplicationSettings* settings){
     char* configDirCopy=malloc(strlen(app->configDir)+strlen("/config.json")+1);
     strcpy(configDirCopy,app->configDir);
     strcat(configDirCopy,"/config.json");
-    printf("(Log) [Config] Saving config to %s\n",configDirCopy);
+    log_info("Config","Saving config to %s",configDirCopy);
     if(!folderExists(app->configDir))
         createFolder(app->configDir);
     FILE* file=fopen(configDirCopy,"w");
     if(!file){
-        printf("(Warn) [Config] Failed to save config\n");
+        log_warning("Config","Failed to save config");
         free(configDirCopy);
         return;
     }
     free(configDirCopy);
     cJSON* root=cJSON_CreateObject();
     if(!root){
-        printf("(Warn) [Config] Failed to save config\n");
+        log_warning("Config","Failed to save config");
         fclose(file);
         return;
     }
@@ -113,7 +115,7 @@ void ApplicationSettings_save(ApplicationSettings* settings){
     cJSON_AddStringToObject(root,"deviceID",app->settings->deviceID);
     char* stringData=cJSON_Print(root);
     if(!stringData){
-        printf("(Warn) [Config] Failed to save config\n");
+        log_warning("Config","Failed to save config");
         cJSON_free(root);
         fclose(file);
         return;
