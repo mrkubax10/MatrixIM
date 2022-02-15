@@ -6,7 +6,7 @@
 #include "app.h"
 #include "http/http.h"
 #include "utils/message.h"
-#include "utils/gettext_util.h"
+#include "translation/translation.h"
 LoginInfo* LoginInfo_new(){
     LoginInfo* output=(LoginInfo*)malloc(sizeof(LoginInfo));
     return output;

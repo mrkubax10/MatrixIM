@@ -1,0 +1,174 @@
+[
+    {
+        "msgid":"Server did not recognize login type",
+        "msgstr":"Serwer nie rozpoznał typu logowania"
+    },
+    {
+        "msgid":"Authentication data is incorrect",
+        "msgstr":"Dane logowania są niepoprawne"
+    },
+    {
+        "msgid":"Unknown error",
+        "msgstr":"Nieznany błąd"
+    },
+    {
+        "msgid":"Server responded with unexpected data type",
+        "msgstr":"Serwer odpowiedział nieoczekiwanym typem danych"
+    },
+    {
+        "msgid":"Failed to parse response",
+        "msgstr":"Błąd podczas przetwarzania odpowiedzi od serwera"
+    },
+    {
+        "msgid":"Failed to get homeserver name",
+        "msgstr":"Błąd podczas uzyskiwania nazwy serwera"
+    },
+    {
+        "msgid":"Failed to parse response: flows is not array",
+        "msgstr":"Błąd podczas przetwarzania odpowiedzi od serwera: obiekt flows nie jest tablicą"
+    },
+    {
+        "msgid":"Failed to parse response: type attribute of Flow object is not string",
+        "msgstr":"Błąd podczas przetwarzania odpowiedzi od serwera: atrybut type obiektu Flow nie jest napisem"
+    },
+    {
+        "msgid":"Username already taken",
+        "msgstr":"Nazwa użytkownika jest już zajęta"
+    },
+    {
+        "msgid":"Failed to parse response: available attribute is not bool",
+        "msgstr":"Błąd podczas przetwarzania odpowiedzi od serwera: atrybut available nie jest typu bool"
+    },
+    {
+        "msgid":"Username is already taken or it is invalid",
+        "msgstr":"Nazwa użytkownika jest już zajęta lub jest niepoprawna"
+    },
+    {
+        "msgid":"Password is too weak",
+        "msgstr":"Hasło jest zbyt słabe"
+    },
+    {
+        "msgid":"Invalid authentication method",
+        "msgstr":"Niepoprawna metoda logowania"
+    },
+    {
+        "msgid":"Failed to parse response: session attribute is not string",
+        "msgstr":"Błąd podczas przetwarzania odpowiedzi od serwera: atrybut session nie jest napisem"
+    },
+    {
+        "msgid":"Server responded with HTTP code different than 200",
+        "msgstr":"Serwer odpowiedział kodem HTTP innym niż 200"
+    },
+    {
+        "msgid":"Failed to enter room",
+        "msgstr":"Błąd podczas dołączania do pokoju"
+    },
+    {
+        "msgid":"Failed to enter room: %s",
+        "msgstr":"Błąd podczas dołączania do pokoju: %s"
+    },
+    {
+        "msgid":"Failed to parse response while entering room",
+        "msgstr":"Błąd podczas przetwarzania odpowiedzi od serwera w trakcie dołączania do pokoju"
+    },
+    {
+        "msgid":"You already entered this room",
+        "msgstr":"Już dołączyłeś do tego pokoju"
+    },
+    {
+        "msgid":"Failed to leave room",
+        "msgstr":"Błąd podczas opuszczania pokoju"
+    },
+    {
+        "msgid":"Failed to parse response while handling error",
+        "msgstr":"Błąd podczas przetwarzania odpowiedzi od serwera w trakcie obsługi błędu"
+    },
+    {
+        "msgid":"This room already exists",
+        "msgstr":"Ten pokój już istnieje"
+    },
+    {
+        "msgid":"Invalid room state",
+        "msgstr":"Nieprawidłowy status pokoju"
+    },
+    {
+        "msgid":"Unsupported room version",
+        "msgstr":"Niewspierana wersja pokoju"
+    },
+    {
+        "msgid":"Unexpected HTTP code while handling error",
+        "msgstr":"Nieoczekiwany kod HTTP podczas obsługi błędu"
+    },
+    {
+        "msgid":"Failed to parse response: aliases is not array",
+        "msgstr":"Błąd podczas przetwarzania odpowiedzi od serwera: obiekt aliases nie jest tablicą"
+    },
+    {
+        "msgid":"Failed to parse response: aliases item is not string",
+        "msgstr":"Błąd podczas przetwarzania odpowiedzi od serwera: element tablicy aliases nie jest napisem"
+    },
+    {
+        "msgid":"Select homeserver first",
+        "msgstr":"Najpierw wybierz serwer"
+    },
+    {
+        "msgid":"Username field cannot be empty",
+        "msgstr":"Pole nazwa użytkownika nie może być puste"
+    },
+    {
+        "msgid":"Password field cannot be empty",
+        "msgstr":"Pole hasło nie może być puste"
+    },
+    {
+        "msgid":"Homeserver IP cannot be empty",
+        "msgstr":"Pole IP serwera nie może być puste"
+    },
+    {
+        "msgid":"Homeserver port cannot be empty",
+        "msgstr":"Pole port serwera nie może być puste"
+    },
+    {
+        "msgid":"Failed to load UI file %s",
+        "msgstr":"Błąd podczas wczytywania pliku UI %s"
+    },
+    {
+        "msgid":"Failed to connect to homeserver",
+        "msgstr":"Błąd podczas łączenia się z serwerem"
+    },
+    {
+        "msgid":"You need to select room to send message",
+        "msgstr":"Musisz wybrać pokój aby wysłać wiadomość"
+    },
+    {
+        "msgid":"Failed to send message",
+        "msgstr":"Błąd podczas wysyłania wiadomości"
+    },
+    {
+        "msgid":"Room alias (for example #room:homeserver)",
+        "msgstr":"Alias pokoju"
+    },
+    {
+        "msgid":"Are you sure?",
+        "msgstr":"Czy jesteś pewien?"
+    },
+    {
+        "msgid":"You need to select room to leave",
+        "msgstr":"Musisz wybrać pokój, który chcesz opuścić"
+    },
+    {
+        "msgid":"MatrixIM - free and open-source Matrix client",
+        "msgstr":"MatrixIM - wolny i otwartoźródłowy klient Matrix"
+    },
+    {
+        "msgid":"Failed to synchronize entered rooms",
+        "msgstr":"Błąd podczas synchronizacji pokoi"
+    },
+    {
+        "msgid":"Failed to parse entered rooms data",
+        "msgstr":"Błąd podczas przetwarzania danych dołączonych pokoi"
+    },
+    {
+        "msgid":"Alias cannot be empty",
+        "msgstr":"Alias nie może być pusty"
+    }
+]

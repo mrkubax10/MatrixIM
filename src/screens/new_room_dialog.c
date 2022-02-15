@@ -5,7 +5,7 @@
 #include "utils/vector.h"
 #include "screens/main_screen.h"
 #include <stdio.h>
-#include "utils/gettext_util.h"
+#include "translation/translation.h"
 NewRoomDialog* newRoomDialog;
 NewRoomDialog* NewRoomDialog_new(){
     NewRoomDialog* output=malloc(sizeof(NewRoomDialog));

@@ -4,7 +4,7 @@
 #include "app.h"
 #include "utils/message.h"
 #include "utils.h"
-#include "utils/gettext_util.h"
+#include "translation/translation.h"
 char* matrix_createPasswordRegisterRequest(char* username,char* password,char* deviceName,char* deviceID,char* session){
     cJSON* root=cJSON_CreateObject();
     cJSON* auth=cJSON_CreateObject();
@@ -34,7 +34,7 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* responseInfo=http_parseResponse(responseData);
     if(strcmp(responseInfo->datatype,"application/json")!=0){
-        showErrorDialog("Server responded with unexpected data type");
+        showErrorDialog(_("Server responded with unexpected data type"));
         HTTPResponseInfo_destroy(responseInfo);
         return false;
     }
@@ -144,7 +144,7 @@ bool matrix_registerPassword(char* ip,char* username,char* password){
     jsonData=cJSON_Parse(responseInfo->data);
     if(!jsonData){
         HTTPResponseInfo_destroy(responseInfo);
-        showErrorDialog(_("Failed to parse response:"));
+        showErrorDialog(_("Failed to parse response"));
         return false;
     }
     cJSON* jsonAccessToken=cJSON_GetObjectItemCaseSensitive(jsonData,"access_token");

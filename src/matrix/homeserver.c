@@ -5,7 +5,7 @@
 #include "app.h"
 #include "http/http.h"
 #include "utils/message.h"
-#include "utils/gettext_util.h"
+#include "translation/translation.h"
 HomeserverInfo* HomeserverInfo_new(){
     HomeserverInfo* output=malloc(sizeof(HomeserverInfo));
     output->supportsLoginPassword=false;

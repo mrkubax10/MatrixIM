@@ -5,7 +5,7 @@
 #include "app.h"
 #include "screens/main_screen.h"
 #include "utils/message.h"
-#include "utils/gettext_util.h"
+#include "translation/translation.h"
 MatrixRoom* MatrixRoom_new(){
     MatrixRoom* output=(MatrixRoom*)malloc(sizeof(MatrixRoom));
     output->chatBuffer=gtk_text_buffer_new(0);

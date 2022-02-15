@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include "screens/main_screen.h"
 #include "utils/message.h"
-#include "utils/gettext_util.h"
+#include "translation/translation.h"
 LoginScreen* loginScreen;
 LoginScreen* LoginScreen_new(){
     LoginScreen* output=(LoginScreen*)malloc(sizeof(LoginScreen));

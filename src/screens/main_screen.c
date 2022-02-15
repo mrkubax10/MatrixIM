@@ -10,7 +10,7 @@
 #include <cjson/cJSON.h>
 #include "utils/message.h"
 #include <pthread.h>
-#include "utils/gettext_util.h"
+#include "translation/translation.h"
 MainScreen* MainScreen_new(){
     MainScreen* output=(MainScreen*)malloc(sizeof(MainScreen));
     output->enteredRooms=Vector_new();
@@ -109,7 +109,7 @@ void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userData){
     gtk_show_about_dialog(GTK_WINDOW(app->window),
         "name",_("MatrixIM - free and open-source Matrix client"),
         "version","git",
-        "copyright","2021 (C) mrkubax10",
+        "copyright","2021-2022 (C) mrkubax10",
         "logo-icon-name","gtk-about",
         NULL);
 }

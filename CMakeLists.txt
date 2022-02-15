@@ -15,10 +15,10 @@ add_executable(MatrixIM
 	src/screens/login_screen.c
 	src/screens/main_screen.c
 	src/screens/new_room_dialog.c
+	src/translation/translation.c
 	src/utils/message.c
 	src/utils/vector.c
 	src/utils/filesystem.c
-	src/utils/gettext_util.c
 )
 if(UNIX)
 	find_package(PkgConfig REQUIRED)
