@@ -43,7 +43,7 @@ void mainscreen_menuMatrixCreateRoom_activated(GtkWidget* widget,gpointer userDa
 void mainscreen_menuHelpAbout_activated(GtkWidget* widget,gpointer userData);
 void mainscreen_listRooms_rowChanged(GtkWidget* widget,gpointer userData);
 int mainscreen_getSelectedRoom();
-void mainscreen_synchronizeEnteredRooms();
+void* mainscreen_synchronizeEnteredRooms(void* arg);
 void mainscreen_eventListener(void* data);
 bool mainscreen_logout();
 void mainscreen_init();

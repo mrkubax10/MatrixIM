@@ -149,28 +149,37 @@ int mainscreen_getSelectedRoom(){
     int selectionID=atoi(gtk_tree_path_to_string(treePath));
     return selectionID;
 }
-void mainscreen_synchronizeEnteredRooms(){
+static int mainscreen_synchronizeEnteredRooms_synchronizeError(gpointer arg){
+    showErrorDialog(_("Failed to synchronize entered rooms"));
+}
+static int mainscreen_synchronizeEnteredRooms_parseError(gpointer arg){
+    showErrorDialog(_("Failed to parse entered rooms data"));
+    mainscreen_finish();
+    loginscreen_init();
+}
+static int mainscreen_synchronizeEnteredRooms_updateRoomTable(gpointer arg){
+    GtkTreeIter iter;
+    gtk_list_store_append(GTK_LIST_STORE(mainScreen->listRoomsStore),&iter);
+    gtk_list_store_set(GTK_LIST_STORE(mainScreen->listRoomsStore),&iter,0,(char*)arg,-1);
+}
+void* mainscreen_synchronizeEnteredRooms(void* arg){
     http_sendGETRequest("/_matrix/client/r0/joined_rooms",app->loginInfo->homeserverName,app->homeserverSocket,app->loginInfo->accessToken);
     char responseData[4096];
     Socket_read(app->homeserverSocket,responseData,4096);
     HTTPResponseInfo* response=http_parseResponse(responseData);
     if(response->code!=HTTP_CODE_OK){
-        showErrorDialog(_("Failed to synchronize entered rooms"));
-        return;
+        g_idle_add(mainscreen_synchronizeEnteredRooms_synchronizeError,0);
+        return 0;
     }
     cJSON* jsonData=cJSON_Parse(response->data);
     if(!jsonData){
-        showErrorDialog(_("Failed to parse entered rooms data"));
-        mainscreen_finish();
-        loginscreen_init();
-        return;
+        g_idle_add(mainscreen_synchronizeEnteredRooms_parseError,0);
+        return 0;
     }
     cJSON* enteredRooms=cJSON_GetObjectItemCaseSensitive(jsonData,"joined_rooms");
     if(!cJSON_IsArray(enteredRooms)){
-        showErrorDialog(_("Failed to parse entered rooms data"));
-        mainscreen_finish();
-        loginscreen_init();
-        return;
+        g_idle_add(mainscreen_synchronizeEnteredRooms_parseError,0);
+        return 0;
     }
     cJSON* room=0;
     for(int i=0; (room=cJSON_GetArrayItem(enteredRooms,i)); i++){
@@ -195,9 +204,7 @@ void mainscreen_synchronizeEnteredRooms(){
             continue;
         }
         cJSON* roomAlias=cJSON_GetArrayItem(roomAliases,0);
-        GtkTreeIter iter;
-        gtk_list_store_append(GTK_LIST_STORE(mainScreen->listRoomsStore),&iter);
-        gtk_list_store_set(GTK_LIST_STORE(mainScreen->listRoomsStore),&iter,0,roomAlias->valuestring,-1);
+        g_idle_add(mainscreen_synchronizeEnteredRooms_updateRoomTable,(gpointer)roomAlias->valuestring);
         MatrixRoom* matrixRoom=MatrixRoom_new();
         matrixRoom->roomAlias=malloc(strlen(roomAlias->valuestring)+1);
         strcpy(matrixRoom->roomAlias,roomAlias->valuestring);
@@ -265,7 +272,7 @@ void mainscreen_init(){
     mainScreen->listFriendsStore=GTK_LIST_STORE(gtk_builder_get_object(builder,"listFriendsStore"));
     GtkTreeViewColumn* treeViewColumnFriends=gtk_tree_view_column_new_with_attributes("Friends",cellRenderer,"text",0,NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(mainScreen->listFriends),treeViewColumnFriends);
-    mainscreen_synchronizeEnteredRooms();
+    g_thread_new("rooms",mainscreen_synchronizeEnteredRooms,0);
     gtk_widget_show_all(app->window);
     g_object_unref(builder);
     //pthread_create(mainScreen->matrixEventThread,0,mainscreen_eventListener,0);

@@ -42,5 +42,5 @@ void loginscreen_buttonHomeserverSelect_clicked(GtkWidget* widget,gpointer userD
 void loginscreen_showPassword_toggle(GtkWidget* widget,gpointer userData);
 void loginscreen_init();
 void loginscreen_finish();
-bool loginscreen_selectHomeserver(char* ip,int port);
+void* loginscreen_selectHomeserver(void* arg);
 #endif

@@ -29,9 +29,17 @@
 #include "utils/message.h"
 #include "utils/str.h"
 #include "translation/translation.h"
+
+typedef struct SelectHomeserverData{
+    char* ip;
+    int port;
+    bool autologinPassword;
+} SelectHomeserverData;
+
 LoginScreen* loginScreen;
 LoginScreen* LoginScreen_new(){
     LoginScreen* output=(LoginScreen*)malloc(sizeof(LoginScreen));
+    output->buttonSelectHomeserver=0;
     return output;
 }
 
@@ -87,7 +95,11 @@ void loginscreen_buttonHomeserverSelect_clicked(GtkWidget* widget,gpointer userD
         showInfoDialog(_("Homeserver port cannot be empty"));
         return;
     }
-    loginscreen_selectHomeserver(ip,atoi(port));
+    SelectHomeserverData* homeserverData=malloc(sizeof(SelectHomeserverData));
+    homeserverData->ip=ip;
+    homeserverData->port=atoi(port);
+    homeserverData->autologinPassword=false;
+    g_thread_new("homeserver",loginscreen_selectHomeserver,(gpointer)homeserverData);
 }
 void loginscreen_showPassword_toggle(GtkWidget* widget,gpointer userData){
     gtk_entry_set_visibility(GTK_ENTRY(loginScreen->entryPassword),!gtk_entry_get_visibility(GTK_ENTRY(loginScreen->entryPassword)));
@@ -111,12 +123,11 @@ void loginscreen_init(){
     loginScreen->buttonLogin=GTK_WIDGET(gtk_builder_get_object(builder,"buttonLogin"));
     loginScreen->buttonRegister=GTK_WIDGET(gtk_builder_get_object(builder,"buttonRegister"));
     if(app->settings->wasLoggedIn && app->settings->lastUsername && app->settings->lastPassword && app->settings->lastHomeserver){
-        if(loginscreen_selectHomeserver(app->settings->lastHomeserver,app->settings->lastPort)){
-            if(matrix_loginPassword(app->settings->lastHomeserver,app->settings->lastUsername,app->settings->lastPassword,"MatrixIM",app->settings->deviceID)){
-                mainscreen_init();
-                return;
-            }
-        }
+        SelectHomeserverData* homeserverData=malloc(sizeof(SelectHomeserverData));
+        homeserverData->ip=app->settings->lastHomeserver;
+        homeserverData->port=app->settings->lastPort;
+        homeserverData->autologinPassword=true;
+        g_thread_new("homeserver",loginscreen_selectHomeserver,(gpointer)homeserverData);
     }
     else{
         if(app->settings->lastHomeserver!=0)
@@ -142,19 +153,9 @@ void loginscreen_finish(){
     gtk_container_foreach(GTK_CONTAINER(app->window),(GtkCallback)gtk_widget_destroy,0);
     free(loginScreen);
 }
-bool loginscreen_selectHomeserver(char* ip,int port){
-    if(Socket_isConnected(app->homeserverSocket)){
-        if(strcmp(ip,app->settings->lastHomeserver)==0 && port==app->settings->lastPort)
-            return true;
-        Socket_disconnect(app->homeserverSocket);
-    }
-    if(!Socket_connect(app->homeserverSocket,ip,port)){
-        showErrorDialog(_("Failed to connect to homeserver"));
-        return false;
-    }
-    HomeserverInfo* homeserver=matrix_getHomeserverInfo(ip,port);
-    if(!homeserver)
-        return false;
+static int loginscreen_selectHomeserver_updateGUI(gpointer arg){
+    HomeserverInfo* homeserver=(HomeserverInfo*)((gpointer*)arg)[0];
+    SelectHomeserverData* selectData=(SelectHomeserverData*)((gpointer*)arg)[1];
     if(!homeserver->supportsLoginPassword){
         gtk_widget_set_sensitive(loginScreen->entryUsername,false);
         gtk_widget_set_sensitive(loginScreen->entryPassword,false);
@@ -163,10 +164,48 @@ bool loginscreen_selectHomeserver(char* ip,int port){
     }
     if(loginScreen->lastSelectedHomeserver)
         free(loginScreen->lastSelectedHomeserver);
-    loginScreen->lastSelectedHomeserver=malloc(strlen(ip)+1);
-    strcpy(loginScreen->lastSelectedHomeserver,ip);
+    loginScreen->lastSelectedHomeserver=malloc(strlen(selectData->ip)+1);
+    strcpy(loginScreen->lastSelectedHomeserver,selectData->ip);
     app->settings->lastHomeserver=loginScreen->lastSelectedHomeserver;
-    app->settings->lastPort=port;
+    app->settings->lastPort=selectData->port;
     HomeserverInfo_destroy(homeserver);
-    return true;
+    if(selectData->autologinPassword){
+        free(selectData);
+        free(arg);
+        if(matrix_loginPassword(app->settings->lastHomeserver,app->settings->lastUsername,app->settings->lastPassword,"MatrixIM",app->settings->deviceID)){
+            loginscreen_finish();
+            mainscreen_init();
+        }
+    }
+    return 0;
+}
+static int loginscreen_selectHomeserver_showError(gpointer arg){
+    showErrorDialog(_("Failed to connect to homeserver"));
+    return 0;
+}
+void* loginscreen_selectHomeserver(void* arg){
+    char* ip=((SelectHomeserverData*)arg)->ip;
+    int port=((SelectHomeserverData*)arg)->port;
+    if(Socket_isConnected(app->homeserverSocket)){
+        if(strcmp(ip,app->settings->lastHomeserver)==0 && port==app->settings->lastPort){
+            free(arg);
+            return 0;
+        }
+        Socket_disconnect(app->homeserverSocket);
+    }
+    if(!Socket_connect(app->homeserverSocket,ip,port)){
+        g_idle_add(loginscreen_selectHomeserver_showError,0);
+        free(arg);
+        return 0;
+    }
+    HomeserverInfo* homeserver=matrix_getHomeserverInfo(ip,port);
+    if(!homeserver){
+        free(arg);
+        return 0;
+    }
+    gpointer* data=malloc(sizeof(gpointer)*2);
+    data[0]=(gpointer)homeserver;
+    data[1]=(gpointer)arg;
+    g_idle_add(loginscreen_selectHomeserver_updateGUI,(gpointer)data);
+    return 0;
 }
